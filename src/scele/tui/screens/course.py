@@ -25,9 +25,9 @@ class CourseScreen(Screen):
     """Course outline showing sections and activities."""
 
     BINDINGS = [
-        Binding("escape", "go_back", "Back"),
+        Binding("escape", "go_back", "Back", id="navigation.back"),
         Binding("backspace", "go_back", "Back", show=False),
-        Binding("r", "refresh", "Refresh"),
+        Binding("r", "refresh", "Refresh", id="course.refresh"),
     ]
 
     def __init__(self, course_id: str):
@@ -88,8 +88,20 @@ class CourseScreen(Screen):
             from .assignment import AssignmentScreen
 
             self.app.push_screen(AssignmentScreen(activity.cmid))
+        elif activity.type in ("resource", "folder"):
+            from .download import DownloadModal
+
+            self.app.push_screen(
+                DownloadModal(activity.url, activity.name),
+                self._download_finished,
+            )
         else:
             self.notify(f"Opening {activity.type}: {activity.name}", title="Activity")
+
+    def _download_finished(self, result: dict[str, object] | None) -> None:
+        if not result or not result.get("ok"):
+            return
+        self.notify(f"Downloaded to {result.get('path', 'disk')}", severity="information")
 
     def action_go_back(self) -> None:
         self.app.pop_screen()

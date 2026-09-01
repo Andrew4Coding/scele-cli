@@ -12,9 +12,10 @@ class ForumScreen(Screen):
     """Forum view showing discussions."""
 
     BINDINGS = [
-        Binding("escape", "go_back", "Back"),
+        Binding("escape", "go_back", "Back", id="navigation.back"),
         Binding("backspace", "go_back", "Back", show=False),
-        Binding("r", "refresh", "Refresh"),
+        Binding("r", "refresh", "Refresh", id="forum.refresh"),
+        Binding("n", "new_discussion", "New discussion", id="forum.new_discussion"),
     ]
 
     def __init__(self, forum_id: str):
@@ -72,3 +73,14 @@ class ForumScreen(Screen):
         table.clear()
         table.loading = True
         self._load_forum()
+
+    def action_new_discussion(self) -> None:
+        from .composer import NewDiscussionModal
+
+        self.app.push_screen(NewDiscussionModal(self.forum_id), self._discussion_posted)
+
+    def _discussion_posted(self, result: dict[str, object] | None) -> None:
+        if not result or not result.get("ok"):
+            return
+        self.notify("Discussion posted", severity="information")
+        self.action_refresh()

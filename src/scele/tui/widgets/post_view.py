@@ -1,5 +1,6 @@
 from textual.app import ComposeResult
 from textual.containers import Vertical
+from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Static
 
@@ -9,6 +10,8 @@ from ...models import Announcement, Post
 class PostView(Widget):
     """A widget that renders a single forum post."""
 
+    can_focus = True
+
     DEFAULT_CSS = """
     PostView {
         height: auto;
@@ -17,6 +20,10 @@ class PostView(Widget):
         border: solid $accent;
         background: $surface;
         margin-bottom: 1;
+    }
+    PostView:focus {
+        border: round $accent;
+        background: $surface-lighten-1;
     }
     PostView .post-header {
         text-style: bold;
@@ -39,6 +46,19 @@ class PostView(Widget):
         super().__init__(**kwargs)
         self.post = post
         self.index = index
+
+    class Selected(Message):
+        """Posted when the user focuses a post to reply to it."""
+
+        def __init__(self, post_view: "PostView") -> None:
+            super().__init__()
+            self.post = post_view.post
+
+    def on_focus(self) -> None:
+        self.post_message(self.Selected(self))
+
+    def on_click(self) -> None:
+        self.post_message(self.Selected(self))
 
     def compose(self) -> ComposeResult:
         post = self.post

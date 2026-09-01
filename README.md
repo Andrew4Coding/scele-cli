@@ -112,6 +112,23 @@ scele download /pluginfile.php/... -o ./dl
 scele announcements
 ```
 
+### Watch a command for changes
+
+```bash
+scele watch assignments 4234 --interval 600 -d      # background; check every 10 min
+scele watch course 4234 --webhook https://hooks.example/x --webhook-header "X-Token: abc"
+scele watch ls                                      # list watches (running / stopped)
+scele watch run algo-hw                             # check once now, print the diff
+scele watch logs algo-hw                            # recorded change / error events
+scele watch rename algo-hw algorithms
+scele watch rm algorithms
+```
+
+Each check re-runs the command, compares its JSON output, and records a git-style unified
+diff of exactly what changed (plus the full new snapshot) — and POSTs it to any configured
+webhook. A foreground `scele watch <cmd>` (no `-d`) streams newline-delimited JSON events.
+Background watches are POSIX-only and do not survive a reboot.
+
 ## Config
 
 - Session cookie:

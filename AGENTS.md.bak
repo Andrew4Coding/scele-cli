@@ -22,7 +22,10 @@ Treat `scele schema` as the source of truth — parse it, don't hard-code comman
 | compact | put `-c` **before** the subcommand for single-line JSON: `scele -c courses` |
 | format  | `-f json` / `-f yaml` / `-f table` to force a format; `-f yaml` needs PyYAML (`pip install scele-cli[yaml]`) |
 
-Error codes: `not_authenticated`, `login_failed`, `request_failed`.
+Error codes: `not_authenticated`, `login_failed`, `request_failed`, `watch_not_found`.
+
+Exception to "one document": a **foreground** `scele watch <cmd>` streams newline-delimited
+JSON events. `watch ls|run|rm|rename|logs` are single-document like everything else.
 
 ## Auth
 
@@ -62,6 +65,13 @@ Writes (ask the human first; `post`/`reply` also need `--yes` to skip their prom
 `enrol <course> --instance N [--key K]`, `subscribe <forum> [--discussion d]`,
 `post <forum> --subject S --message M --yes`, `reply <post> --message M --yes`,
 `download <cmid|url> [-o dir]`.
+
+Watch (background monitoring): `watch <cmd...> [--interval N] [--webhook URL]
+[--webhook-header 'K: V'] [--on start|change] [-d]` starts a watch (`-d` = detached);
+`watch ls`, `watch run <name>`, `watch logs <name>`, `watch rm <name> [--keep]`,
+`watch rename <name> <new>` manage them. A `change` event carries a git-style unified
+`diff` (3 lines of context, `sesskey` stripped), `added_lines`/`removed_lines`, and the
+full new `snapshot`. State lives under `~/.config/scele/watches/<name>/`. POSIX only.
 
 ## Examples
 

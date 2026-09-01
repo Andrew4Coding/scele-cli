@@ -13,6 +13,7 @@ Use this file to quickly find which files to read or modify for a given task.
 | Task | Primary files | Also check |
 |------|--------------|------------|
 | Add/modify a CLI command | `src/scele/cli.py` | `src/scele/api.py`, `src/scele/models.py` |
+| Modify the `watch` command | `src/scele/watch.py` | `src/scele/cli.py`, `src/scele/schema.py`, `tests/test_watch.py` |
 | Add/fix an HTML parser | `src/scele/parsers.py` | `tests/test_parsers.py`, `ENDPOINTS.md` |
 | Change data models | `src/scele/models.py` | `src/scele/schema.py`, `src/scele/parsers.py` |
 | Fix auth / session issues | `src/scele/auth.py`, `src/scele/session.py` | `src/scele/config.py` |
@@ -25,6 +26,7 @@ Use this file to quickly find which files to read or modify for a given task.
 | Task | Files |
 |------|-------|
 | Add/fix parser tests | `tests/test_parsers.py` |
+| Add/fix watch tests | `tests/test_watch.py` |
 | Run tests | `make test` or `.venv/bin/pytest -q` |
 
 ## CI/CD & release
@@ -56,6 +58,13 @@ Use this file to quickly find which files to read or modify for a given task.
 | Binary installers | `install-bin.sh`, `install-bin.ps1` |
 
 ## Common multi-file flows
+
+**Changing `watch`** (diffing, webhooks, daemon, subcommands):
+1. `src/scele/watch.py` — core logic (no parser/model changes; reuses existing commands)
+2. `src/scele/cli.py` — the `watch` group / `_WatchGroup` alias behavior
+3. `src/scele/schema.py` — `RETURNS["watch"]` / `EXAMPLES["watch"]`
+4. `tests/test_watch.py`
+5. Docs: `CLAUDE.md`, `AGENTS.md.bak`, `skills/scele/SKILL.md`
 
 **Adding a new Moodle page command** (e.g. `scele grades <course-id>`):
 1. `ENDPOINTS.md` — document the URL pattern and DOM structure

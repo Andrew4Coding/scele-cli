@@ -9,29 +9,44 @@ in the browser. Your password is sent only to SCELE, over HTTPS, and never writt
 
 ## Install
 
-Prerequisite: **Python 3.10+** ([python.org](https://www.python.org/downloads/) — on Windows
-tick *"Add python.exe to PATH"*).
+### Prebuilt binary — no Python needed (recommended)
 
-**One-liner** (needs [pipx](https://pipx.pypa.io); `python -m pip install --user pipx` if you
-don't have it):
+**Linux / macOS**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.sh | sh
+```
+
+**Windows** (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.ps1 | iex
+```
+
+Fetches the latest release binary for your OS/arch, verifies its SHA-256, and drops `scele`
+on your `PATH`. Pin a version with `SCELE_VERSION=v0.1.0`, change the location with
+`SCELE_BIN_DIR`. Or grab `scele-<os>-<arch>` straight from the
+[Releases page](https://github.com/Andrew4Coding/scele-cli/releases) and `chmod +x` it.
+
+Then open a new terminal:
+
+```bash
+scele login
+scele courses
+```
+
+### With Python (pipx)
 
 ```bash
 pipx install git+https://github.com/Andrew4Coding/scele-cli.git
 ```
 
-**From a clone** — the scripts also bootstrap pip + pipx for you:
+Or from a clone — the scripts bootstrap pip + pipx for you:
 
 ```bash
 git clone https://github.com/Andrew4Coding/scele-cli.git && cd scele-cli
-./install.sh            # Linux / macOS / WSL / Git-Bash
+./install.sh            # Linux / macOS / WSL / Git-Bash   (flags: --editable, --from, --uninstall)
 .\install.ps1           # Windows PowerShell
-```
-
-Open a **new terminal** (so `PATH` is active), then:
-
-```bash
-scele login
-scele courses
 ```
 
 ### As an agent skill
@@ -40,25 +55,7 @@ scele courses
 npx skills add Andrew4Coding/scele-cli     # installs skills/scele/SKILL.md for your agent
 ```
 
-See [SKILLS.md](SKILLS.md).
-
-### Options
-
-| flag | effect |
-|---|---|
-| `--editable` / `-Editable` | install from the working tree; code edits apply with no reinstall |
-| `--from <path\|git-url>` / `-From` | install from somewhere other than this folder |
-| `--uninstall` / `-Uninstall` | remove `scele` |
-
-### Manual (any OS, no script)
-
-```bash
-python -m pip install --user pipx  &&  python -m pipx ensurepath
-python -m pipx install .            # from this folder
-```
-
-or plain `python -m pip install --user .` (then ensure the user scripts dir —
-`~/.local/bin` on Unix, `%APPDATA%\Python\Scripts` on Windows — is on `PATH`).
+See [SKILLS.md](SKILLS.md) and [RELEASING.md](RELEASING.md).
 
 ### Shell completion (optional)
 

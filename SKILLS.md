@@ -8,7 +8,7 @@ The skill and the CLI install separately:
 
 | | what it is | install |
 |---|---|---|
-| **CLI** | the `scele` command (Python) | `pipx install git+https://github.com/Andrew4Coding/scele-cli.git` |
+| **CLI** | the `scele` command | `curl -fsSL https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.sh \| sh` (binary, no Python) — or `pipx install git+https://github.com/Andrew4Coding/scele-cli.git` |
 | **Skill** | instructions telling an agent *when and how* to call `scele` | `npx skills add Andrew4Coding/scele-cli` |
 
 ## Install the skill — `npx skills`

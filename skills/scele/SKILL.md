@@ -22,14 +22,15 @@ to stderr and exit non-zero.
 scele --version
 ```
 
-If missing, install it (needs Python 3.10+ and pipx):
+If missing, install the prebuilt binary (no Python needed):
 
 ```bash
-pipx install git+https://github.com/Andrew4Coding/scele-cli.git
+curl -fsSL https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.sh | sh
+# Windows: irm https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.ps1 | iex
 ```
 
-(No pipx? `python -m pip install --user pipx && python -m pipx ensurepath` first, or clone the
-repo and run `./install.sh` / `.\install.ps1`.)
+With Python instead: `pipx install git+https://github.com/Andrew4Coding/scele-cli.git`.
+If `scele` still isn't found after install, add `~/.local/bin` to `PATH` (or open a new shell).
 
 ## Discover commands at runtime
 

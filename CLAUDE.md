@@ -28,9 +28,18 @@ a dependency of this CLI.
   - `output.py` — `emit` (one JSON doc to stdout), `fail` (JSON error to stderr, exit 1).
   - `config.py` — cookie store. `~/.config/scele/` (or `$XDG_CONFIG_HOME`) on Unix,
     `%APPDATA%\scele\` on Windows; override with `SCELE_CONFIG_DIR`. Base URL: `SCELE_BASE_URL`.
-- `install.sh` (Linux/macOS/WSL/Git-Bash) and `install.ps1` (Windows) — bootstrap pip+pipx and
-  `pipx install` this dir. Flags: `--editable`, `--from <path|git-url>`, `--uninstall`.
-  `Makefile` targets just call `install.sh`.
+- `__version__` in `src/scele/__init__.py` is the **single version source**; `pyproject.toml`
+  reads it via `[tool.hatch.version]`. Bump it only through `scripts/release.sh <version>`.
+- Install paths:
+  - `install-bin.sh` / `install-bin.ps1` — raw-content installers: download the prebuilt binary
+    from GitHub Releases (latest, or `SCELE_VERSION`), verify SHA-256, drop on PATH. No Python.
+  - `install.sh` / `install.ps1` — bootstrap pip+pipx and `pipx install` a checkout/git URL.
+    Flags: `--editable`, `--from`, `--uninstall`.
+  - `packaging/scele.spec` + `packaging/entry.py` + `scripts/build-binary.sh` — PyInstaller
+    one-file build (this OS/arch only; no cross-compile).
+  - `.github/workflows/release.yml` — on `v*` tag: build binaries on 5 runners + sdist/wheel,
+    publish a GitHub Release with `checksums.txt`. `ci.yml` runs pytest on push/PR.
+  - `RELEASING.md` is the operator guide.
 - `skills/scele/SKILL.md` — the Agent Skill (condensed `AGENTS.md` in skill format). Installs via
   `npx skills add Andrew4Coding/scele-cli` (the vercel-labs `skills` CLI discovers it at
   `skills/*/SKILL.md`), or `npx scele-skill` (`bin/install-skill.mjs`, zero deps, `--with-cli` also
@@ -53,8 +62,9 @@ a dependency of this CLI.
 ## Working on the CLI
 
 ```bash
-make dev            # python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+make dev            # python3 -m venv .venv && .venv/bin/pip install -e ".[dev,build]"
 make test           # .venv/bin/pytest -q
+make binary         # scripts/build-binary.sh -> dist/scele
 ./install.sh -e     # pipx editable install (puts `scele` on PATH)
 ```
 

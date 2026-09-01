@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build a release for, e.g. v0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  binaries:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest,     target: linux-x86_64 }
+          - { os: ubuntu-24.04-arm,  target: linux-aarch64 }
+          - { os: macos-13,          target: macos-x86_64 }
+          - { os: macos-latest,      target: macos-arm64 }
+          - { os: windows-latest,    target: windows-x86_64 }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev,build]"
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          pytest -q
+          scele schema > /dev/null
+
+      - name: Build binary
+        shell: bash
+        run: pyinstaller packaging/scele.spec --clean --noconfirm --distpath dist --workpath build
+
+      - name: Package
+        shell: bash
+        run: |
+          mkdir out
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp dist/scele.exe "out/scele-${{ matrix.target }}.exe"
+          else
+            cp dist/scele "out/scele-${{ matrix.target }}"
+          fi
+          cd out
+          python - <<'PY'
+          import hashlib, glob, pathlib
+          for f in glob.glob("scele-*"):
+              if f.endswith(".sha256"):
+                  continue
+              h = hashlib.sha256(pathlib.Path(f).read_bytes()).hexdigest()
+              pathlib.Path(f + ".sha256").write_text(f"{h}  {f}\n")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: scele-${{ matrix.target }}
+          path: out/*
+
+  pypackage:
+    name: sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - run: python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: dist/*
+
+  release:
+    needs: [binaries, pypackage]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Collect assets
+        run: |
+          mkdir release
+          find artifacts -type f -exec cp {} release/ \;
+          cat release/*.sha256 > release/checksums.txt || true
+          rm -f release/*.sha256
+          ls -l release
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: release/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true

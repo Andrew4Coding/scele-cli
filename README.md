@@ -117,17 +117,19 @@ scele announcements
 ```bash
 scele watch assignments 4234 --interval 600 -d      # background; check every 10 min
 scele watch course 4234 --webhook https://hooks.example/x --webhook-header "X-Token: abc"
-scele watch ls                                      # list watches (running / stopped)
+scele watch ls                                      # list running watches
 scele watch run algo-hw                             # check once now, print the diff
 scele watch logs algo-hw                            # recorded change / error events
 scele watch rename algo-hw algorithms
-scele watch rm algorithms
+scele watch rm algorithms                           # stop + delete one
+scele watch clear                                   # stop + delete all
 ```
 
 Each check re-runs the command, compares its JSON output, and records a git-style unified
 diff of exactly what changed (plus the full new snapshot) — and POSTs it to any configured
 webhook. A foreground `scele watch <cmd>` (no `-d`) streams newline-delimited JSON events.
-Background watches are POSIX-only and do not survive a reboot.
+Background watches are POSIX-only and do not survive a reboot. A watch exists only while
+running: once it stops it is deleted, and `watch ls` prunes any whose process has gone.
 
 ## Config
 

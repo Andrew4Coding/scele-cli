@@ -29,8 +29,10 @@ RETURNS: dict[str, str] = {
     "reply": "ActionResult & {url: string}",
     "download": "ActionResult & {path: string}",
     "watch": "subcommands: start -> ActionResult & {name, detached, pid?}; "
-             "ls -> {name, command, interval, status, last_change, tick_count}[]; "
-             "run -> WatchEvent; rm/rename -> ActionResult; logs -> WatchEvent[]. "
+             "ls -> {name, command, interval, status, last_change, tick_count}[] "
+             "(running only; stopped watches are pruned); run -> WatchEvent; "
+             "rm/rename -> ActionResult; clear -> ActionResult & {removed: string[]}; "
+             "logs -> WatchEvent[]. A stopped watch is deleted, not kept. "
              "A foreground `watch <cmd>` streams newline-delimited WatchEvent docs.",
     "schema": "this document",
 }

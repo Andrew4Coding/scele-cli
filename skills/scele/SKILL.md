@@ -77,9 +77,10 @@ Writes — confirm with the user first; `post`/`reply` also need `--yes`:
 Watch — re-run any command on an interval and report exact line-level output changes:
 `scele watch <cmd...> [--interval N] [--webhook URL] [--webhook-header 'K: V'] [--on start|change] [-d]`,
 `scele watch ls`, `scele watch run <name>`, `scele watch logs <name>`,
-`scele watch rm <name> [--keep]`, `scele watch rename <name> <new>`.
+`scele watch rm <name>`, `scele watch clear`, `scele watch rename <name> <new>`.
 A foreground `scele watch <cmd>` streams newline-delimited JSON events; `-d` runs it in
 the background (POSIX). Change events carry a git-style `diff` plus the full `snapshot`.
+A watch exists only while running — stopping it deletes it, and `ls` prunes dead ones.
 
 ## Examples
 

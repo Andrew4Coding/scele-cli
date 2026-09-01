@@ -68,10 +68,12 @@ Writes (ask the human first; `post`/`reply` also need `--yes` to skip their prom
 
 Watch (background monitoring): `watch <cmd...> [--interval N] [--webhook URL]
 [--webhook-header 'K: V'] [--on start|change] [-d]` starts a watch (`-d` = detached);
-`watch ls`, `watch run <name>`, `watch logs <name>`, `watch rm <name> [--keep]`,
+`watch ls`, `watch run <name>`, `watch logs <name>`, `watch rm <name>`, `watch clear`,
 `watch rename <name> <new>` manage them. A `change` event carries a git-style unified
 `diff` (3 lines of context, `sesskey` stripped), `added_lines`/`removed_lines`, and the
 full new `snapshot`. State lives under `~/.config/scele/watches/<name>/`. POSIX only.
+A watch exists only while running: stopping it deletes it, `watch ls` returns only
+running watches (pruning any whose process has gone), and `watch clear` stops + deletes all.
 
 ## Examples
 

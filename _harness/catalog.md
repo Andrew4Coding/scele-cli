@@ -44,7 +44,7 @@ SceleCLI/
 | `auth.py` | Moodle login form scraping, credential handling |
 | `session.py` | `SceleSession` HTTP wrapper with auth-redirect interception |
 | `config.py` | XDG/APPDATA config dir, `cookies.json` persistence, `watches_dir()` |
-| `watch.py` | Background watches: canonicalize + git-style unified-diff of a command's JSON output, append-only event log, webhook delivery, POSIX detach/liveness/stop. State under `~/.config/scele/watches/<name>/` |
+| `watch.py` | Background watches: canonicalize + git-style unified-diff of a command's JSON output, append-only event log, webhook delivery, POSIX detach/liveness/stop, `clear()` + `prune()`. A watch is deleted when it stops. State under `~/.config/scele/watches/<name>/` |
 
 ## `tests/`
 

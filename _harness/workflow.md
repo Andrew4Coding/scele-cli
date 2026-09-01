@@ -31,7 +31,8 @@ description: Execution flows and procedures
    spawn+liveness+stop) lives in `src/scele/watch.py` — no parser or model changes needed;
    `watch` reuses existing commands via a child `scele -c <cmd>` process.
 2. CLI surface is the `watch` group in `src/scele/cli.py` (`_WatchGroup` makes
-   `watch <cmd>` an alias for `watch start <cmd>`).
+   `watch <cmd>` an alias for `watch start <cmd>`): `ls`, `run`, `rm`, `clear`, `rename`, `logs`.
+   Watches are ephemeral — stopping one deletes it; `ls` prunes dead ones.
 3. Update `RETURNS["watch"]` / `EXAMPLES["watch"]` in `src/scele/schema.py` if the
    surface changed (`test_schema_manifest` enforces non-empty entries).
 4. Tests: `tests/test_watch.py` (stub `watch.run_command`; never hits the network).

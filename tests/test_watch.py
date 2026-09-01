@@ -1,10 +1,16 @@
 """Tests for the background `watch` command (no network, no real subprocess)."""
 
 import json
+import os
 
 import pytest
 
 from scele import config, watch
+
+
+def _mark_running(name):
+    """Write a daemon.pid pointing at this (alive) process so the watch reads as running."""
+    watch._write_json(watch._dir(name) / "daemon.pid", {"pid": os.getpid(), "started": "now"})
 
 
 @pytest.fixture(autouse=True)
@@ -135,9 +141,18 @@ def test_listing_and_info(monkeypatch):
     monkeypatch.setattr(watch, "run_command", _capture([_ok([{"id": 1}])]))
     watch.create("alpha", ["courses"], interval=45, webhooks=[], headers=[], on="change")
     watch.tick("alpha")
+    _mark_running("alpha")
     rows = watch.listing()
     assert rows[0]["name"] == "alpha" and rows[0]["interval"] == 45
     assert watch.info("alpha")["tick_count"] == 1
+
+
+def test_listing_prunes_stopped_watches(monkeypatch):
+    monkeypatch.setattr(watch, "run_command", _capture([_ok([{"id": 1}])]))
+    watch.create("stale", ["courses"], interval=30, webhooks=[], headers=[], on="change")
+    watch.tick("stale")
+    assert watch.listing() == []
+    assert not (config.WATCHES_DIR / "stale").exists()
 
 
 def test_rename_moves_state(monkeypatch):
@@ -160,6 +175,15 @@ def test_remove_deletes_dir(monkeypatch):
         watch.events("gone")
 
 
+def test_clear_removes_everything(monkeypatch):
+    monkeypatch.setattr(watch, "run_command", _capture([_ok([{"id": 1}])]))
+    for n in ("a", "b", "c"):
+        watch.create(n, ["courses"], interval=30, webhooks=[], headers=[], on="change")
+    removed = watch.clear()
+    assert sorted(removed) == ["a", "b", "c"]
+    assert watch.listing() == []
+
+
 def test_bad_name_rejected():
     with pytest.raises(watch.WatchError):
         watch.create("bad/name", ["courses"], interval=30, webhooks=[], headers=[], on="change")
@@ -179,6 +203,7 @@ def test_cli_watch_ls_json(monkeypatch, capsys):
 
     monkeypatch.setattr(watch, "run_command", _capture([_ok([{"id": 1}])]))
     watch.create("c1", ["courses"], interval=30, webhooks=[], headers=[], on="change")
+    _mark_running("c1")
     res = CliRunner().invoke(main, ["-c", "watch", "ls"])
     assert res.exit_code == 0
     assert json.loads(res.output)[0]["name"] == "c1"

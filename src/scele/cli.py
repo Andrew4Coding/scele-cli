@@ -307,7 +307,7 @@ def watch_run_daemon(name):
 @watch.command("ls")
 @click.pass_context
 def watch_ls(ctx):
-    """List all watches."""
+    """List running watches (stopped ones are pruned)."""
     _out(ctx, _guard(_watch.listing))
 
 
@@ -321,12 +321,19 @@ def watch_run(ctx, name):
 
 @watch.command("rm")
 @click.argument("name")
-@click.option("--keep", is_flag=True, help="Stop the watch but keep its history.")
 @click.pass_context
-def watch_rm(ctx, name, keep):
+def watch_rm(ctx, name):
     """Stop and delete a watch."""
-    _guard(lambda: _watch.remove(name, keep=keep))
-    _out(ctx, {"ok": True, "action": "watch-rm", "name": name, "kept": keep})
+    signalled = _guard(lambda: _watch.remove(name))
+    _out(ctx, {"ok": True, "action": "watch-rm", "name": name, "stopped": bool(signalled)})
+
+
+@watch.command("clear")
+@click.pass_context
+def watch_clear(ctx):
+    """Stop and delete every watch."""
+    names = _guard(_watch.clear)
+    _out(ctx, {"ok": True, "action": "watch-clear", "removed": names})
 
 
 @watch.command("rename")

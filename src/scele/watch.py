@@ -313,42 +313,63 @@ def run_loop(name: str, *, stream=None) -> None:
                     break
                 time.sleep(1)
     finally:
-        (d / "daemon.pid").unlink(missing_ok=True)
+        # A watch exists only while it runs: once the loop ends, it is gone.
+        _delete_dir(d)
+
+
+def _delete_dir(d: Path) -> None:
+    """Best-effort recursive delete of a watch directory."""
+    if not d.exists():
+        return
+    for child in d.iterdir():
+        try:
+            child.unlink()
+        except OSError:
+            pass
+    try:
+        d.rmdir()
+    except OSError:
+        pass
 
 
 def stop(name: str) -> bool:
-    """Signal a running watch to exit. Returns True if a live process was signalled."""
+    """Signal a running watch to exit and delete it. Returns True if a live process
+    was signalled."""
     d = _dir(name)
     pid_info = _read_json(d / "daemon.pid", None)
-    if not pid_info:
-        return False
-    pid = pid_info.get("pid", -1)
-    if not _pid_alive(pid):
-        (d / "daemon.pid").unlink(missing_ok=True)
-        return False
-    try:
-        os.kill(pid, signal.SIGTERM)
-    except ProcessLookupError:
-        return False
-    for _ in range(50):
-        if not _pid_alive(pid):
-            break
-        time.sleep(0.1)
-    (d / "daemon.pid").unlink(missing_ok=True)
-    return True
+    signalled = False
+    if pid_info:
+        pid = pid_info.get("pid", -1)
+        if pid > 0 and pid != os.getpid() and _pid_alive(pid):
+            try:
+                os.kill(pid, signal.SIGTERM)
+                signalled = True
+            except ProcessLookupError:
+                pass
+            for _ in range(50):
+                if not _pid_alive(pid):
+                    break
+                time.sleep(0.1)
+    _delete_dir(d)
+    return signalled
 
 
-def remove(name: str, *, keep: bool = False) -> None:
-    """Stop a watch and delete its directory (unless keep=True)."""
+def remove(name: str) -> bool:
+    """Stop a watch (if running) and delete its directory."""
     d = _dir(name)
     if not d.exists():
         raise WatchError(f"no such watch: {name}")
-    stop(name)
-    if keep:
-        return
-    for child in d.iterdir():
-        child.unlink()
-    d.rmdir()
+    return stop(name)
+
+
+def clear() -> list[str]:
+    """Stop and delete every watch. Returns the names removed."""
+    base = watches_dir()
+    names = [d.name for d in sorted(base.iterdir())
+             if (d / "watch.json").exists()] if base.exists() else []
+    for name in names:
+        stop(name)
+    return names
 
 
 def rename(name: str, new_name: str) -> None:
@@ -390,8 +411,20 @@ def info(name: str) -> dict:
     }
 
 
+def prune() -> list[str]:
+    """Delete any watch whose process is no longer running. Returns the names dropped."""
+    base = watches_dir()
+    dropped = []
+    for d in sorted(base.iterdir()) if base.exists() else []:
+        if (d / "watch.json").exists() and _status(d) != "running":
+            _delete_dir(d)
+            dropped.append(d.name)
+    return dropped
+
+
 def listing() -> list[dict]:
-    """One summary row per watch."""
+    """One summary row per running watch (stopped watches are pruned first)."""
+    prune()
     base = watches_dir()
     rows = []
     for d in sorted(base.iterdir()) if base.exists() else []:

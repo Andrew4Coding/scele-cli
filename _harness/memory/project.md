@@ -45,7 +45,10 @@
   `diff` + `added_lines`/`removed_lines` + full `snapshot`.
 - Webhook: plain JSON POST, `--webhook-header` passthrough only (no HMAC), 3 retries w/ backoff.
 - **POSIX only** (`os.fork`-style detach via `subprocess` + `start_new_session`). No
-  reboot persistence — stale watches show as `stopped` in `watch ls`.
+  reboot persistence.
+- **Ephemeral**: a watch exists only while running. `run_loop` deletes its own dir on
+  exit; `watch ls` calls `prune()` to drop watches whose process is gone; `watch clear`
+  stops + deletes all. There is no "stopped" retained state and no `rm --keep`.
 
 ## Open items
 

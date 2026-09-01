@@ -8,7 +8,9 @@ from textual.screen import Screen
 from textual.widgets import Button, Footer, Header, Input, Label, Select, Static
 
 from ..settings import (
+    DEFAULT_KEYBINDING_MODE,
     DEFAULT_THEME,
+    KEYBINDING_MODE_OPTIONS,
     KEYBINDING_LABELS,
     TuiSettings,
     default_settings,
@@ -98,6 +100,17 @@ class SettingsScreen(Screen):
                 allow_blank=False,
                 id="settings-theme",
             )
+            yield Label("Keybinding mode", id="settings-mode-label")
+            yield Select(
+                KEYBINDING_MODE_OPTIONS,
+                value=app_settings.keybinding_mode,
+                allow_blank=False,
+                id="settings-mode",
+            )
+            yield Static(
+                "Vim mode uses h/j/k/l for back, movement, and selection. Text fields keep normal editing.",
+                id="settings-mode-description",
+            )
             yield Static("Keyboard shortcuts", id="settings-keymap-title")
             for action, label in KEYBINDING_LABELS:
                 input_id = self._input_id(action)
@@ -123,6 +136,7 @@ class SettingsScreen(Screen):
     def reset_button(self) -> None:
         defaults = default_settings()
         self.query_one("#settings-theme", Select).value = DEFAULT_THEME
+        self.query_one("#settings-mode", Select).value = DEFAULT_KEYBINDING_MODE
         for action, _label in KEYBINDING_LABELS:
             self.query_one(f"#{self._input_id(action)}", Input).value = key_for_display(
                 defaults.keymap[action]
@@ -134,6 +148,12 @@ class SettingsScreen(Screen):
         theme = self.query_one("#settings-theme", Select).value
         if not isinstance(theme, str) or theme not in self.app.available_themes:
             self._set_status("Choose a valid color theme.", error=True)
+            return
+
+        keybinding_mode = self.query_one("#settings-mode", Select).value
+        valid_modes = {mode for _label, mode in KEYBINDING_MODE_OPTIONS}
+        if not isinstance(keybinding_mode, str) or keybinding_mode not in valid_modes:
+            self._set_status("Choose a valid keybinding mode.", error=True)
             return
 
         keymap = {}
@@ -152,7 +172,13 @@ class SettingsScreen(Screen):
             return
 
         try:
-            self.app.apply_settings(TuiSettings(theme=theme, keymap=keymap))
+            self.app.apply_settings(
+                TuiSettings(
+                    theme=theme,
+                    keybinding_mode=keybinding_mode,
+                    keymap=keymap,
+                )
+            )
         except (OSError, ValueError) as exc:
             self._set_status(f"Could not save settings: {exc}", error=True)
             return

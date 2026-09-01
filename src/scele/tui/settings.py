@@ -10,6 +10,11 @@ from ..config import CONFIG_DIR
 
 SETTINGS_PATH = CONFIG_DIR / "tui.json"
 DEFAULT_THEME = "scele-dark"
+DEFAULT_KEYBINDING_MODE = "default"
+KEYBINDING_MODE_OPTIONS = (
+    ("Default", "default"),
+    ("Vim (h/j/k/l)", "vim"),
+)
 
 DEFAULT_KEYMAP = {
     "app.quit": "q",
@@ -72,9 +77,12 @@ class TuiSettings:
     """Persisted preferences that do not contain credentials or session data."""
 
     theme: str = DEFAULT_THEME
+    keybinding_mode: str = DEFAULT_KEYBINDING_MODE
     keymap: dict[str, str] = field(default_factory=lambda: dict(DEFAULT_KEYMAP))
 
     def __post_init__(self) -> None:
+        if self.keybinding_mode not in {mode for _label, mode in KEYBINDING_MODE_OPTIONS}:
+            self.keybinding_mode = DEFAULT_KEYBINDING_MODE
         configured = self.keymap if isinstance(self.keymap, dict) else {}
         merged = dict(DEFAULT_KEYMAP)
         for action in DEFAULT_KEYMAP:
@@ -103,9 +111,15 @@ def load_settings(path: Path | None = None) -> TuiSettings:
     if not isinstance(data, dict):
         return default_settings()
     theme = data.get("theme", DEFAULT_THEME)
+    keybinding_mode = data.get("keybinding_mode", DEFAULT_KEYBINDING_MODE)
     keymap = data.get("keymap", {})
     return TuiSettings(
         theme=theme if isinstance(theme, str) and theme else DEFAULT_THEME,
+        keybinding_mode=(
+            keybinding_mode
+            if isinstance(keybinding_mode, str)
+            else DEFAULT_KEYBINDING_MODE
+        ),
         keymap=keymap if isinstance(keymap, dict) else {},
     )
 

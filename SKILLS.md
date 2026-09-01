@@ -1,62 +1,65 @@
 # scele as an Agent Skill
 
 `skills/scele/SKILL.md` is a portable [Agent Skill](https://docs.claude.com/en/docs/claude-code/skills)
-that teaches an AI agent (Claude Code, or anything that reads `SKILL.md` files) how to drive the
-`scele` CLI — discovering commands via `scele schema`, the auth flow, the course→forum→thread ID
-chain, and the JSON output contract.
+that teaches an AI agent how to drive the `scele` CLI — discovering commands via `scele schema`,
+the auth flow, the course→forum→thread ID chain, and the JSON output contract.
 
-The skill and the CLI are separate installs:
+The skill and the CLI install separately:
 
 | | what it is | install |
 |---|---|---|
-| **CLI** | the `scele` command (Python) | `./install.sh` / `.\install.ps1` |
-| **Skill** | instructions that tell an agent *when and how* to call `scele` | `npx scele-skill` |
+| **CLI** | the `scele` command (Python) | `pipx install git+https://github.com/Andrew4Coding/scele-cli.git` |
+| **Skill** | instructions telling an agent *when and how* to call `scele` | `npx skills add Andrew4Coding/scele-cli` |
 
-## Install the skill
+## Install the skill — `npx skills`
+
+Uses the [`skills`](https://github.com/vercel-labs/skills) CLI (a package manager for Agent Skills):
 
 ```bash
-npx scele-skill                 # -> ~/.claude/skills/scele/     (all your projects)
-npx scele-skill --project       # -> ./.claude/skills/scele/     (this repo only)
-npx scele-skill --dir <path>    # -> <path>/scele/               (any other agent)
-npx scele-skill --with-cli      # also runs the CLI installer
+npx skills add Andrew4Coding/scele-cli          # interactive: pick scope + agents
+npx skills add Andrew4Coding/scele-cli -g -y     # global, no prompts
+npx skills add Andrew4Coding/scele-cli --list    # just show what's in the repo
+npx skills remove scele
+npx skills update scele
+```
+
+It clones the repo, finds `skills/scele/SKILL.md`, and links it into your agent's skills
+directory (`~/.claude/skills/` global, or `./.claude/skills/` in a project).
+
+## Install the skill — bundled installer
+
+`npx scele-skill` (this repo's `bin/install-skill.mjs`, zero deps) does the same copy and can
+also install the CLI in one step:
+
+```bash
+npx scele-skill                 # -> ~/.claude/skills/scele/
+npx scele-skill --project       # -> ./.claude/skills/scele/
+npx scele-skill --with-cli      # also runs ./install.sh or .\install.ps1
 npx scele-skill --uninstall
 ```
 
-Until this package is published to npm, point `npx` at the source:
-
-```bash
-npx github:<you>/scele_cli --with-cli      # from a git remote
-npx /path/to/scele_cli --with-cli          # from a local checkout
-```
-
-Then restart your agent so it re-scans the skills directory.
+Point `npx` at the source until published: `npx github:Andrew4Coding/scele-cli …` or
+`npx /path/to/scele_cli …`.
 
 ## Manual install (no npx)
-
-Copy the folder into any skills directory the agent scans:
 
 ```bash
 mkdir -p ~/.claude/skills
 cp -r skills/scele ~/.claude/skills/
 ```
 
-Locations by agent:
-
-- Claude Code (user): `~/.claude/skills/scele/`
-- Claude Code (project): `<repo>/.claude/skills/scele/`
-- Other agents: wherever they load `SKILL.md` bundles from.
+Locations: Claude Code user `~/.claude/skills/scele/`, project `<repo>/.claude/skills/scele/`.
 
 ## Verify
 
 ```bash
-scele --version          # CLI present
-ls ~/.claude/skills/scele # skill present
+scele --version              # CLI present
+npx skills ls                # skill listed
 ```
 
-In Claude Code, ask something like *"list my scele courses"* — it should invoke the skill,
-check `scele whoami`, and run `scele courses`.
+Then ask your agent *"list my scele courses"* — it should run `scele whoami` then `scele courses`.
 
-## Updating
+## Keeping it current
 
-Re-run the same `npx scele-skill …` command; it overwrites the installed copy. Keep
-`skills/scele/SKILL.md` in sync with `AGENTS.md` and the `scele schema` output when commands change.
+Re-run `npx skills update scele` (or the `npx scele-skill` command). Keep
+`skills/scele/SKILL.md` in sync with `AGENTS.md` and `scele schema` when commands change.

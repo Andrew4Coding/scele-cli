@@ -9,33 +9,38 @@ in the browser. Your password is sent only to SCELE, over HTTPS, and never writt
 
 ## Install
 
-Only prerequisite: **Python 3.10+** ([python.org](https://www.python.org/downloads/) —
-on Windows tick *"Add python.exe to PATH"*). The installers bootstrap `pip` and
-[`pipx`](https://pipx.pypa.io) and put `scele` on your `PATH` in an isolated environment,
-so it works from any directory like `git`.
+Prerequisite: **Python 3.10+** ([python.org](https://www.python.org/downloads/) — on Windows
+tick *"Add python.exe to PATH"*).
 
-**Linux / macOS**
+**One-liner** (needs [pipx](https://pipx.pypa.io); `python -m pip install --user pipx` if you
+don't have it):
 
 ```bash
-cd scele_cli
-./install.sh
+pipx install git+https://github.com/Andrew4Coding/scele-cli.git
 ```
 
-**Windows** (PowerShell)
+**From a clone** — the scripts also bootstrap pip + pipx for you:
 
-```powershell
-cd scele_cli
-# if scripts are blocked, this session only:
-#   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\install.ps1
+```bash
+git clone https://github.com/Andrew4Coding/scele-cli.git && cd scele-cli
+./install.sh            # Linux / macOS / WSL / Git-Bash
+.\install.ps1           # Windows PowerShell
 ```
 
-Open a **new terminal** (so the updated `PATH` is active), then:
+Open a **new terminal** (so `PATH` is active), then:
 
 ```bash
 scele login
 scele courses
 ```
+
+### As an agent skill
+
+```bash
+npx skills add Andrew4Coding/scele-cli     # installs skills/scele/SKILL.md for your agent
+```
+
+See [SKILLS.md](SKILLS.md).
 
 ### Options
 
@@ -136,7 +141,7 @@ src/scele/
 
 See `ENDPOINTS.md` for the underlying Moodle endpoints and page structure,
 `AGENTS.md` for using `scele` programmatically, and `SKILLS.md` for installing the
-`scele` **Agent Skill** (`npx scele-skill`) so Claude Code / other agents know how to use it.
+`scele` **Agent Skill** (`npx skills add Andrew4Coding/scele-cli`) so agents know how to use it.
 
 The page-capture tooling used to reverse-engineer SCELE's HTML lives in the sibling
 `../scele_cli_recorder/` and is not needed to run the CLI.

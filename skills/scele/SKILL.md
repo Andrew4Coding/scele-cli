@@ -22,11 +22,14 @@ to stderr and exit non-zero.
 scele --version
 ```
 
-If missing, install it (needs Python 3.10+):
+If missing, install it (needs Python 3.10+ and pipx):
 
 ```bash
-npx scele-skill --with-cli        # or, from the repo: ./install.sh  /  .\install.ps1
+pipx install git+https://github.com/Andrew4Coding/scele-cli.git
 ```
+
+(No pipx? `python -m pip install --user pipx && python -m pipx ensurepath` first, or clone the
+repo and run `./install.sh` / `.\install.ps1`.)
 
 ## Discover commands at runtime
 

@@ -1,0 +1,24 @@
+{
+  "version": "0.1.0",
+  "generatedAt": "2026-09-01T13:23:16.004Z",
+  "files": [
+    "AGENTS.md",
+    "_harness/.setup/FLOW.md",
+    "_harness/.setup/PROMPT.md",
+    "_harness/.setup/templates/catalog.md",
+    "_harness/.setup/templates/readme.md",
+    "_harness/.setup/templates/routing.md",
+    "_harness/.setup/templates/rules.md",
+    "_harness/.setup/templates/workflow.md",
+    "_harness/gc/FLOW.md",
+    "_harness/gc/POLICY.md",
+    "_harness/gc/README.md",
+    "_harness/memory/agents/.gitkeep",
+    "_harness/memory/project.md",
+    "_harness/skills/harness/SKILL.md",
+    "_harness/skills/harness/audit.py",
+    "_harness/skills/harness/token_audit.py",
+    "_harness/skills/readme.md",
+    "_harness/skills/template.md"
+  ]
+}

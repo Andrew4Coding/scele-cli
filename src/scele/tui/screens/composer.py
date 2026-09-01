@@ -15,7 +15,7 @@ class _ForumComposerModal(ModalScreen[dict[str, object] | None]):
     """Shared confirmation and worker flow for forum writes."""
 
     BINDINGS = [
-        Binding("escape", "cancel", "Cancel", id="composer.cancel"),
+        Binding("escape", "cancel", "Cancel", id="navigation.back"),
     ]
 
     subject_required = False

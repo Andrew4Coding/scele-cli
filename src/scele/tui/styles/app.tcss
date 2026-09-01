@@ -329,3 +329,59 @@ LoadingIndicator {
 .bold {
     text-style: bold;
 }
+
+/* Settings Screen */
+#settings-content {
+    height: 1fr;
+    padding: 1 2;
+}
+
+#settings-title {
+    color: $accent;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#settings-description {
+    color: $text-muted;
+    margin-bottom: 2;
+}
+
+#settings-theme-label, #settings-keymap-title {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+#settings-theme {
+    width: 36;
+    margin-bottom: 2;
+}
+
+.setting-row {
+    width: 100%;
+    height: 3;
+}
+
+.setting-label {
+    width: 36;
+    padding-top: 1;
+}
+
+.setting-input {
+    width: 28;
+}
+
+#settings-status {
+    height: auto;
+    min-height: 1;
+    margin-top: 1;
+}
+
+#settings-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+    padding-bottom: 1;
+}

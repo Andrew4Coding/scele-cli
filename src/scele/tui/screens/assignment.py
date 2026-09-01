@@ -13,9 +13,9 @@ class AssignmentScreen(Screen):
     """Assignment detail view showing submission status."""
 
     BINDINGS = [
-        Binding("escape", "go_back", "Back"),
+        Binding("escape", "go_back", "Back", id="navigation.back"),
         Binding("backspace", "go_back", "Back", show=False),
-        Binding("r", "refresh", "Refresh"),
+        Binding("r", "refresh", "Refresh", id="assignment.refresh"),
     ]
 
     def __init__(self, cmid: str):

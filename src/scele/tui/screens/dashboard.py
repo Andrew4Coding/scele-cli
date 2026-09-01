@@ -16,9 +16,9 @@ class DashboardScreen(Screen[None]):
     """Main dashboard showing courses and announcements."""
 
     BINDINGS = [
-        Binding("r", "refresh", "Refresh"),
-        Binding("a", "announcements", "Announcements"),
-        Binding("escape", "go_back", "Back"),
+        Binding("r", "refresh", "Refresh", id="dashboard.refresh"),
+        Binding("a", "announcements", "Announcements", id="dashboard.announcements"),
+        Binding("escape", "go_back", "Back", id="navigation.back"),
     ]
 
     DEFAULT_CSS = """

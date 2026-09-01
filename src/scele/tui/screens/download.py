@@ -17,7 +17,7 @@ class DownloadModal(ModalScreen[dict[str, object] | None]):
     """Confirm a resource download and show byte-level progress."""
 
     BINDINGS = [
-        Binding("escape", "cancel", "Cancel", id="download.cancel"),
+        Binding("escape", "cancel", "Cancel", id="navigation.back"),
     ]
 
     DEFAULT_CSS = """

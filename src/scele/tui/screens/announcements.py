@@ -13,9 +13,9 @@ class AnnouncementsScreen(Screen):
     """Full announcements view."""
 
     BINDINGS = [
-        Binding("escape", "go_back", "Back"),
+        Binding("escape", "go_back", "Back", id="navigation.back"),
         Binding("backspace", "go_back", "Back", show=False),
-        Binding("r", "refresh", "Refresh"),
+        Binding("r", "refresh", "Refresh", id="announcements.refresh"),
     ]
 
     def compose(self) -> ComposeResult:

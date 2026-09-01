@@ -1,0 +1,58 @@
+from textual.app import ComposeResult
+from textual.containers import Vertical
+from textual.widget import Widget
+from textual.widgets import Static
+
+from ...models import Announcement, Post
+
+
+class PostView(Widget):
+    """A widget that renders a single forum post."""
+
+    DEFAULT_CSS = """
+    PostView {
+        height: auto;
+        margin: 0 1;
+        padding: 1 2;
+        border: solid $accent;
+        background: $surface;
+        margin-bottom: 1;
+    }
+    PostView .post-header {
+        text-style: bold;
+        color: $text;
+    }
+    PostView .post-meta {
+        color: $text-muted;
+        text-style: italic;
+    }
+    PostView .post-body {
+        margin-top: 1;
+    }
+    PostView .post-index {
+        color: $accent;
+        text-style: bold;
+    }
+    """
+
+    def __init__(self, post: Post | Announcement, index: int = 0, **kwargs):
+        super().__init__(**kwargs)
+        self.post = post
+        self.index = index
+
+    def compose(self) -> ComposeResult:
+        post = self.post
+        if isinstance(post, Post):
+            yield Static(f"#{self.index}", classes="post-index")
+            yield Static(f"{post.subject or '(no subject)'}", classes="post-header")
+            meta_parts = [x for x in (post.author, post.created) if x]
+            yield Static(" — ".join(meta_parts), classes="post-meta")
+            yield Static(post.body or "", classes="post-body")
+        elif isinstance(post, Announcement):
+            yield Static(f"#{self.index}", classes="post-index")
+            yield Static(f"{post.subject}", classes="post-header")
+            meta_parts = [x for x in (post.author, post.date) if x]
+            yield Static(" — ".join(meta_parts), classes="post-meta")
+            yield Static(post.body or "", classes="post-body")
+            if post.permalink:
+                yield Static(f"[dim]{post.permalink}[/dim]", classes="post-meta")

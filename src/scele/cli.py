@@ -246,5 +246,23 @@ def download(ctx, target, out_dir):
     _out(ctx, {"ok": True, "action": "download", "path": str(dest)})
 
 
+@main.command()
+def tui():
+    """Launch the interactive TUI.
+
+    Requires the 'tui' extra: pip install scele-cli[tui]
+    """
+    try:
+        from .tui.app import SceleApp
+    except ImportError:
+        raise click.ClickException(
+            "The TUI requires the 'textual' package.\n"
+            "Install it with:  pip install scele-cli[tui]\n"
+            "Or with pipx:     pipx inject scele-cli textual"
+        )
+    app = SceleApp()
+    app.run()
+
+
 if __name__ == "__main__":
     main()

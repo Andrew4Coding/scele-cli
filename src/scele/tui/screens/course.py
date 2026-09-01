@@ -1,0 +1,101 @@
+from textual import work
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.screen import Screen
+from textual.widgets import Footer, Header, Static, Tree
+
+from ... import api
+from ...models import Activity
+from ...session import NotAuthenticatedError
+
+# Type icons for activities
+TYPE_ICONS = {
+    "forum": "💬",
+    "assign": "📋",
+    "resource": "📄",
+    "folder": "📁",
+    "url": "🔗",
+    "page": "📝",
+    "quiz": "❓",
+    "label": "🏷️",
+}
+
+
+class CourseScreen(Screen):
+    """Course outline showing sections and activities."""
+
+    BINDINGS = [
+        Binding("escape", "go_back", "Back"),
+        Binding("backspace", "go_back", "Back", show=False),
+        Binding("r", "refresh", "Refresh"),
+    ]
+
+    def __init__(self, course_id: str):
+        super().__init__()
+        self.course_id = course_id
+
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield Static(f"📖 Course {self.course_id}", id="course-title")
+        yield Tree("Sections", id="course-tree")
+        yield Footer()
+
+    def on_mount(self) -> None:
+        tree = self.query_one("#course-tree", Tree)
+        tree.root.expand()
+        tree.loading = True
+        self._load_course()
+
+    @work(thread=True)
+    def _load_course(self) -> None:
+        try:
+            session = self.app.session
+            sections = api.course(session, self.course_id)
+            self.app.call_from_thread(self._populate_tree, sections)
+        except NotAuthenticatedError:
+            self.app.call_from_thread(self.notify, "Session expired", severity="error")
+        except Exception as e:
+            self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
+
+    def _populate_tree(self, sections) -> None:
+        tree = self.query_one("#course-tree", Tree)
+        tree.clear()
+        for sec in sections:
+            section_label = f"📂 {sec.name}" if sec.name else "📂 (unnamed section)"
+            section_node = tree.root.add(section_label, expand=True)
+            if sec.summary:
+                section_node.add_leaf(f"[dim]{sec.summary[:100]}[/dim]")
+            for act in sec.activities:
+                icon = TYPE_ICONS.get(act.type, "📎")
+                label = f"{icon} [{act.type}] {act.name}"
+                section_node.add_leaf(label, data=act)
+        tree.loading = False
+
+    def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
+        """Handle selection of a tree node (activity)."""
+        node = event.node
+        if node.data is None:
+            return
+        activity = node.data
+        if not isinstance(activity, Activity):
+            return
+
+        if activity.type == "forum":
+            from .forum import ForumScreen
+
+            self.app.push_screen(ForumScreen(activity.cmid))
+        elif activity.type == "assign":
+            from .assignment import AssignmentScreen
+
+            self.app.push_screen(AssignmentScreen(activity.cmid))
+        else:
+            self.notify(f"Opening {activity.type}: {activity.name}", title="Activity")
+
+    def action_go_back(self) -> None:
+        self.app.pop_screen()
+
+    def action_refresh(self) -> None:
+        tree = self.query_one("#course-tree", Tree)
+        tree.clear()
+        tree.loading = True
+        self._load_course()

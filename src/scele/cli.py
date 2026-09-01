@@ -1,10 +1,11 @@
 """`scele` command-line entry point. Every command prints one JSON document to stdout."""
 
+import sys
 from pathlib import Path
 
 import click
 
-from . import __version__, api
+from . import __version__, api, watch as _watch
 from .auth import terminal_login
 from .config import base_url, clear_cookies
 from .output import emit, fail
@@ -24,8 +25,20 @@ def _guard(fn):
         return fn()
     except NotAuthenticatedError as e:
         fail(str(e), code="not_authenticated")
+    except _watch.WatchError as e:
+        fail(str(e), code="watch_not_found")
     except Exception as e:  # noqa: BLE001 - surface any failure as JSON
         fail(f"{type(e).__name__}: {e}", code="request_failed")
+
+
+class _WatchGroup(click.Group):
+    """A group that treats `scele watch <cmd> ...` as `scele watch start <cmd> ...`
+    whenever the first token is not one of its own subcommands."""
+
+    def resolve_command(self, ctx, args):
+        if args and args[0] not in self.commands and not args[0].startswith("-"):
+            args = ["start", *args]
+        return super().resolve_command(ctx, args)
 
 
 @click.group(
@@ -244,6 +257,95 @@ def download(ctx, target, out_dir):
     s = _session(ctx)
     dest = _guard(lambda: api.download(s, target, Path(out_dir)))
     _out(ctx, {"ok": True, "action": "download", "path": str(dest)})
+
+
+@main.group("watch", cls=_WatchGroup,
+            context_settings={"help_option_names": ["-h", "--help"]})
+def watch():
+    """Re-run a command on an interval and report exact line-level output changes.
+
+    `scele watch <command...>` starts a watch; `ls`, `rm`, `rename`, `logs`, and
+    `run` manage existing ones. Foreground watches stream newline-delimited JSON
+    events (the one command that is not single-document).
+    """
+
+
+@watch.command("start", context_settings={"ignore_unknown_options": True})
+@click.argument("command", nargs=-1, required=True)
+@click.option("--name", help="Watch name (default: derived from the command).")
+@click.option("--interval", default=_watch.DEFAULT_INTERVAL, show_default=True,
+              help=f"Seconds between checks (min {_watch.MIN_INTERVAL}).")
+@click.option("--webhook", "webhooks", multiple=True, help="Webhook URL to POST changes to (repeatable).")
+@click.option("--webhook-header", "headers", multiple=True,
+              help="Header for webhook requests, 'Key: Value' (repeatable).")
+@click.option("--on", type=click.Choice(["start", "change"]), default="change", show_default=True,
+              help="Fire the webhook on the first capture too, or only on later changes.")
+@click.option("-d", "--detach", is_flag=True, help="Run in the background.")
+@click.pass_context
+def watch_start(ctx, command, name, interval, webhooks, headers, on, detach):
+    """Start watching COMMAND (any scele subcommand with its arguments)."""
+    wname = name or "-".join(command) or "watch"
+    cfg = _guard(lambda: _watch.create(
+        wname, list(command), interval=interval,
+        webhooks=list(webhooks), headers=list(headers), on=on))
+    if detach:
+        spawned = _guard(lambda: _watch.spawn(wname))
+        _out(ctx, {"ok": True, "action": "watch", "name": wname, "detached": True,
+                   "pid": spawned["pid"], "command": list(command), "interval": cfg["interval"]})
+        return
+    click.echo(f"watching '{wname}' every {cfg['interval']}s; Ctrl-C to stop", err=True)
+    _guard(lambda: _watch.run_loop(wname, stream=sys.stdout))
+
+
+@watch.command("_run", hidden=True)
+@click.argument("name")
+def watch_run_daemon(name):
+    """Internal: execute the blocking watch loop (used by --detach)."""
+    _watch.run_loop(name)
+
+
+@watch.command("ls")
+@click.pass_context
+def watch_ls(ctx):
+    """List all watches."""
+    _out(ctx, _guard(_watch.listing))
+
+
+@watch.command("run")
+@click.argument("name")
+@click.pass_context
+def watch_run(ctx, name):
+    """Check a watch once now and print the diff."""
+    _out(ctx, _guard(lambda: _watch.tick(name)))
+
+
+@watch.command("rm")
+@click.argument("name")
+@click.option("--keep", is_flag=True, help="Stop the watch but keep its history.")
+@click.pass_context
+def watch_rm(ctx, name, keep):
+    """Stop and delete a watch."""
+    _guard(lambda: _watch.remove(name, keep=keep))
+    _out(ctx, {"ok": True, "action": "watch-rm", "name": name, "kept": keep})
+
+
+@watch.command("rename")
+@click.argument("name")
+@click.argument("new_name")
+@click.pass_context
+def watch_rename(ctx, name, new_name):
+    """Rename a stopped watch."""
+    _guard(lambda: _watch.rename(name, new_name))
+    _out(ctx, {"ok": True, "action": "watch-rename", "name": name, "new_name": new_name})
+
+
+@watch.command("logs")
+@click.argument("name")
+@click.option("--limit", default=50, show_default=True, help="Number of events to show.")
+@click.pass_context
+def watch_logs(ctx, name, limit):
+    """Show a watch's recorded events."""
+    _out(ctx, _guard(lambda: _watch.events(name, limit)))
 
 
 if __name__ == "__main__":

@@ -28,6 +28,10 @@ RETURNS: dict[str, str] = {
     "post": "ActionResult & {url: string}",
     "reply": "ActionResult & {url: string}",
     "download": "ActionResult & {path: string}",
+    "watch": "subcommands: start -> ActionResult & {name, detached, pid?}; "
+             "ls -> {name, command, interval, status, last_change, tick_count}[]; "
+             "run -> WatchEvent; rm/rename -> ActionResult; logs -> WatchEvent[]. "
+             "A foreground `watch <cmd>` streams newline-delimited WatchEvent docs.",
     "schema": "this document",
 }
 
@@ -48,6 +52,7 @@ EXAMPLES: dict[str, str] = {
     "post": "scele post 17474 --subject 'Hi' --message 'Hello' --yes",
     "reply": "scele reply 553756 --message 'Thanks' --yes",
     "download": "scele download 222038 -o ./dl",
+    "watch": "scele watch assignments 4234 --interval 600 --webhook https://hooks.example/x -d",
 }
 
 _PY_TO_JSON = {str: "string", int: "integer", float: "number", bool: "boolean", dict: "object"}
@@ -126,7 +131,7 @@ def build(group) -> dict:
             "error_code": "not_authenticated",
         },
         "error_codes": [
-            "not_authenticated", "login_failed", "request_failed",
+            "not_authenticated", "login_failed", "request_failed", "watch_not_found",
         ],
         "id_conventions": {
             "course id": "from `scele courses` / URLs `course/view.php?id=<course>`",

@@ -1,0 +1,24 @@
+{
+  "name": "scele-skill",
+  "version": "0.1.0",
+  "description": "Installer for the `scele` agent skill (and optionally the scele Python CLI)",
+  "type": "module",
+  "bin": {
+    "scele-skill": "bin/install-skill.mjs"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "src/",
+    "pyproject.toml",
+    "install.sh",
+    "install.ps1",
+    "SKILLS.md",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": ["scele", "moodle", "fasilkom", "claude", "agent-skill", "cli"],
+  "license": "MIT"
+}

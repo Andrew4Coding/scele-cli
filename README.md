@@ -135,8 +135,9 @@ src/scele/
   schema.py     `scele schema` manifest
 ```
 
-See `ENDPOINTS.md` for the underlying Moodle endpoints and page structure, and
-`AGENTS.md` for using `scele` programmatically.
+See `ENDPOINTS.md` for the underlying Moodle endpoints and page structure,
+`AGENTS.md` for using `scele` programmatically, and `SKILLS.md` for installing the
+`scele` **Agent Skill** (`npx scele-skill`) so Claude Code / other agents know how to use it.
 
 The page-capture tooling used to reverse-engineer SCELE's HTML lives in the sibling
 `../scele_cli_recorder/` and is not needed to run the CLI.

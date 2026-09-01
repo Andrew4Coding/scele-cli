@@ -31,6 +31,10 @@ a dependency of this CLI.
 - `install.sh` (Linux/macOS/WSL/Git-Bash) and `install.ps1` (Windows) — bootstrap pip+pipx and
   `pipx install` this dir. Flags: `--editable`, `--from <path|git-url>`, `--uninstall`.
   `Makefile` targets just call `install.sh`.
+- `skills/scele/SKILL.md` — the Agent Skill (condensed `AGENTS.md` in skill format). Installed with
+  `bin/install-skill.mjs` (`package.json` bin `scele-skill`, zero deps): `npx scele-skill` copies it
+  to `~/.claude/skills/scele/`; `--with-cli` also runs `install.sh`/`install.ps1`. Keep SKILL.md,
+  `AGENTS.md`, and `schema.py` in sync when commands change. `SKILLS.md` documents install methods.
   - `schema.py` — builds the `scele schema` manifest by introspecting the click group + dataclasses.
 - `ENDPOINTS.md` — Moodle endpoint map + per-page component structure (derived from the recorder's captures).
 - `AGENTS.md` — how to drive `scele` programmatically. Keep in sync with the CLI.

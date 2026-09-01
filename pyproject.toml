@@ -31,6 +31,7 @@ Issues = "https://github.com/Andrew4Coding/scele-cli/issues"
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
 build = ["pyinstaller>=6.0"]
+yaml = ["pyyaml>=6.0"]
 
 [project.scripts]
 scele = "scele.cli:main"

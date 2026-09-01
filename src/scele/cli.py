@@ -16,7 +16,7 @@ def _session(ctx) -> SceleSession:
 
 
 def _out(ctx, obj):
-    emit(obj, compact=ctx.obj["compact"])
+    emit(obj, fmt=ctx.obj["format"], compact=ctx.obj["compact"])
 
 
 def _guard(fn):
@@ -30,15 +30,20 @@ def _guard(fn):
 
 @click.group(
     context_settings={"help_option_names": ["-h", "--help"]},
-    epilog="Output is always JSON. Run `scele schema` for a machine-readable manifest "
-           "of every command, argument, and return shape.",
+    epilog="Output format defaults to a table on a terminal, plain JSON when piped. "
+           "Use `-f json`, `-f yaml`, or `-f table` to override. "
+           "Run `scele schema` for a machine-readable manifest.",
 )
 @click.version_option(__version__, prog_name="scele", message="%(version)s")
-@click.option("-c", "--compact", is_flag=True, help="Single-line JSON instead of indented.")
+@click.option("-c", "--compact", is_flag=True, help="Single-line JSON (implies -f json).")
+@click.option("-f", "--format", "fmt",
+              type=click.Choice(["auto", "json", "yaml", "table"]),
+              default="auto", show_default=True,
+              help="Output format. auto = table on terminal, JSON when piped.")
 @click.pass_context
-def main(ctx, compact):
-    """Command-line client for SCELE (Moodle) at Fasilkom UI. Output is always JSON."""
-    ctx.obj = {"compact": compact, "session": SceleSession()}
+def main(ctx, compact, fmt):
+    """Command-line client for SCELE (Moodle) at Fasilkom UI."""
+    ctx.obj = {"compact": compact, "format": fmt, "session": SceleSession()}
 
 
 @main.command()
@@ -46,7 +51,7 @@ def main(ctx, compact):
 def schema(ctx):
     """Print a machine-readable manifest of all commands and I/O shapes."""
     from .schema import build
-    _out(ctx, build(main))
+    emit(build(main), fmt="json", compact=ctx.obj["compact"])
 
 
 @main.command()

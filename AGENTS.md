@@ -16,10 +16,11 @@ Treat `scele schema` as the source of truth — parse it, don't hard-code comman
 
 | | |
 |---|---|
-| stdout | exactly one JSON value per run (array or object) — safe to pipe straight into a parser |
+| stdout | exactly one logical document per run; **plain JSON when piped or redirected** (safe to pipe straight into a parser), pretty table on a real terminal |
 | stderr | on failure only: `{"ok": false, "error": "<code>", "message": "<text>"}` |
 | exit code | `0` success, `1` any error |
 | compact | put `-c` **before** the subcommand for single-line JSON: `scele -c courses` |
+| format  | `-f json` / `-f yaml` / `-f table` to force a format; `-f yaml` needs PyYAML (`pip install scele-cli[yaml]`) |
 
 Error codes: `not_authenticated`, `login_failed`, `request_failed`.
 

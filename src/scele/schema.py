@@ -110,10 +110,13 @@ def build(group) -> dict:
         "description": "Read/write client for SCELE (Moodle) at Fasilkom UI.",
         "base_url": base_url(),
         "output_contract": {
-            "stdout": "exactly one JSON document per invocation (array or object)",
+            "stdout": "exactly one logical document per invocation; table on a terminal, "
+                      "plain JSON when piped/redirected (or with -f json/yaml/table)",
             "stderr": "on failure: {\"ok\": false, \"error\": <code>, \"message\": <text>}",
             "exit_code": "0 on success, 1 on any error",
+            "format_flag": "-f / --format: auto (default), json, yaml, table",
             "compact_flag": "-c / --compact (before the subcommand) for single-line JSON",
+            "note": "`scele schema` itself always prints JSON",
         },
         "auth": {
             "setup": "scele login  (prompts for username + password; no browser, no CAPTCHA)",

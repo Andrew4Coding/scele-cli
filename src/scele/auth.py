@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 
 from . import __version__
 from .config import base_url, save_cookies
+from .output import fail
 
 USER_AGENT = f"scele-cli/{__version__} (+https://github.com/; python-requests)"
 
@@ -39,7 +40,6 @@ def terminal_login(username: str | None = None, password: str | None = None) -> 
         page = http.get(f"{base}/login/index.php", timeout=30)
         page.raise_for_status()
     except requests.RequestException as e:
-        from .output import fail
         fail(f"could not reach {base}: {e}", code="request_failed")
 
     token_el = BeautifulSoup(page.text, "lxml").select_one("input[name=logintoken]")
@@ -48,7 +48,6 @@ def terminal_login(username: str | None = None, password: str | None = None) -> 
     username = username or os.environ.get("SCELE_USERNAME") or _prompt("SCELE username: ")
     password = password or os.environ.get("SCELE_PASSWORD") or _prompt("SCELE password: ", secret=True)
     if not username or not password:
-        from .output import fail
         fail("username and password are required", code="request_failed")
 
     http.post(
@@ -65,7 +64,6 @@ def terminal_login(username: str | None = None, password: str | None = None) -> 
     ]
     session_ok = any(c["name"].lower().startswith("moodlesession") for c in cookies)
     if "/login/index.php" in check.url or not session_ok:
-        from .output import fail
         fail("login failed: check your username and password", code="login_failed")
 
     save_cookies(cookies)

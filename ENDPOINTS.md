@@ -1,9 +1,11 @@
-# SCELE endpoints & extractable CLI commands
+# SCELE endpoints & page structure
 
-Derived from `moodle_capture/clean/`. Base URL: `https://scele.cs.ui.ac.id`. Standard Moodle 4.x
-(theme `classic`). All authenticated requests reuse the logged-in browser session; state-changing
-requests carry `sesskey` (a per-session token, e.g. `btz3644rfg`, read once from any page's
-`M.cfg.sesskey` or a form hidden field).
+Reference for the Moodle endpoints `scele` scrapes and the DOM each parser targets. Derived from
+`../scele_cli_recorder/moodle_capture/clean/`. Base URL: `https://scele.cs.ui.ac.id`. Standard
+Moodle 4.x (theme `classic`). Requests reuse the stored session cookie; state-changing requests
+carry `sesskey` (a per-session token, read from any page's `M.cfg.sesskey` — see `session.sesskey()`).
+
+For the CLI surface itself, use `scele schema` or see `AGENTS.md` — not this file.
 
 ## Endpoint map
 
@@ -44,34 +46,4 @@ Announcement blocks: `Pengumuman Akademis` — each item has author, date, body,
 
 ---
 
-## CLI commands worth extracting
-
-```
-scele login                       # drive Playwright headed login, persist storage_state
-scele whoami                      # confirm session, print user + sesskey
-
-scele courses                     # list my courses (from dashboard / My courses)
-scele categories [--id N]         # browse course catalog        -> /course/index.php?categoryid=
-scele course <id>                 # course outline: sections + activities   -> /course/view.php?id=
-scele course <id> --json          # structured {sections:[{name,activities:[{cmid,type,name,url}]}]}
-scele enrol <courseid> [--key K]  # self-enrol                    -> POST /enrol/index.php
-
-scele forums <courseid>           # all forums in a course
-scele forum <id>                  # discussions in a forum        -> /mod/forum/view.php?id=
-scele thread <d>                  # posts in a discussion         -> /mod/forum/discuss.php?d=
-scele forum post <forumid> --subject S --message M               # POST /mod/forum/post.php
-scele forum reply <postid> --message M
-scele forum subscribe <forumid|--discussion d> [--off]
-
-scele assignments <courseid>      # assignments + due dates + submission status
-scele assignment <cmid>           # one assignment: status, deadline, files   -> /mod/assign/view.php?id=
-scele submissions <cmid>          # my submission files (download links)
-
-scele resources <courseid>        # all File/Folder resources with download URLs
-scele download <cmid|url> [-o]    # fetch a resource / pluginfile      -> pluginfile.php?forcedownload=1
-
-scele announcements               # dashboard academic announcements
-scele user <id> [--course C]      # profile lookup               -> /user/view.php
-```
-
-Not safe to automate (keep manual): CAPTCHA/SSO in login, `logout`, `delete`, `unenrol`.
+Not automated by design: `logout`, `delete`, `unenrol` links.

@@ -92,7 +92,6 @@ scele courses                     # your dashboard courses
 scele categories [--id 31]        # browse the catalog
 scele category 31                 # courses in a category
 scele course 4234                 # section / activity outline
-scele course 4234 --json
 
 scele forums 4234                 # forums in a course
 scele forum 221050                # discussions in a forum

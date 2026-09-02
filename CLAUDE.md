@@ -55,8 +55,8 @@ for the old scraping implementation and is no longer a dependency of anything he
   - `.github/workflows/release.yml` — on `v*` tag: build binaries on 5 runners + sdist/wheel,
     publish a GitHub Release with `checksums.txt`. `ci.yml` runs pytest on push/PR.
   - `RELEASING.md` is the operator guide.
-- `skills/scele/SKILL.md` — the Agent Skill. Installs via `npm install -g scele-skill`,
-  `npx scele-skill` (`bin/install-skill.mjs`), or `npx skills add Andrew4Coding/scele-cli`. Keep SKILL.md,
+- `skills/scele/SKILL.md` — the Agent Skill. Installs via `npm install -g scele-cli`,
+  `npx scele-cli` (`bin/install-skill.mjs`), or `npx skills add Andrew4Coding/scele-cli`. Keep SKILL.md,
   `AGENTS.md.bak`, and `schema.py` in sync when commands change. `SKILLS.md` documents all install methods.
   - `schema.py` — builds the `scele schema` manifest by introspecting the click group + dataclasses.
 - `ENDPOINTS.md` — the web-service functions each command calls.

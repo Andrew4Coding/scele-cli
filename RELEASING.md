@@ -50,7 +50,7 @@ tar -czf scele-macos-arm64.tar.gz -C dist scele   # what the workflow ships
 | binary (manual) | download `scele-<os>-<arch>.tar.gz`, unpack, run `scele/scele` (link it onto `PATH`) | nothing |
 | Python | `pipx install git+https://github.com/Andrew4Coding/scele-cli.git` | Python 3.10+, pipx |
 | from clone | `./install.sh` / `.\install.ps1` | Python 3.10+ |
-| npm (global) | `npm install -g scele-skill` (or `npx scele-skill`) | node >= 16 |
+| npm (global) | `npm install -g scele-cli` (or `npx scele-cli`) | node >= 16 |
 | agent skill | `npx skills add Andrew4Coding/scele-cli` | node |
 
 The `install-bin.sh` / `install-bin.ps1` scripts always fetch the **latest** release unless

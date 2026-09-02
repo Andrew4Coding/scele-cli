@@ -18,7 +18,7 @@
 | Moodle mobile web-service API (v0.2.0) | `/login/token.php` accepts a password on SCELE; the WS API is stable JSON — no HTML breakage. Replaced the scraping layer (`parsers.py`, bs4/lxml) entirely. |
 | Token-only storage | The password is exchanged for a token at `login` and never persisted; `token.json` holds only the token. |
 | Stateless CLI — except `watch` | Read/write commands stay one-shot; `watch` adds an opt-in POSIX background daemon that re-runs a command on an interval |
-| Multi-channel distribution | PyInstaller `--onedir` bundle (`scele-<os>-<arch>.tar.gz`, ~40× faster cold start than onefile; installed to `~/.local/lib/scele-app` with a `~/.local/bin/scele` symlink), Python package (pipx/pip), npm global package (`npm install -g scele-skill` / `npx scele-skill`), Agent Skill (SKILL.md) |
+| Multi-channel distribution | PyInstaller `--onedir` bundle (`scele-<os>-<arch>.tar.gz`, ~40× faster cold start than onefile; installed to `~/.local/lib/scele-app` with a `~/.local/bin/scele` symlink), Python package (pipx/pip), npm global package (`npm install -g scele-cli` / `npx scele-cli`), Agent Skill (SKILL.md) |
 | Bundled TUI assets | `packaging/scele.spec` collects the Textual stylesheet + data files so `scele tui` works from the frozen binary |
 | Centralized version in `__init__.py` | Consumed by Hatchling, CLI `--version`, and release scripts |
 

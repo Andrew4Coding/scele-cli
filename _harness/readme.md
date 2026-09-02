@@ -77,8 +77,8 @@ An account behind an external SSO login page cannot mint a token this way.
 ```
 scele courses                 → course id            (e.g. 4234)
 scele course 4234             → activities w/ cmid    (assignment / resource module ids)
-scele forums 4234             → forum instance id
-scele forum <forum-id>        → discussions w/ id (d)
+scele forums 4234             → forum cmid
+scele forum <forum-cmid>      → discussions w/ id (d)
 scele thread <d>              → posts w/ id + parent
 ```
 

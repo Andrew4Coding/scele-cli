@@ -27,7 +27,7 @@ The token is minted once: `POST /login/token.php` with `username`, `password`,
 | `categories` | `core_course_get_categories` |
 | `category` | `core_course_get_courses_by_field` (field `category`) |
 | `forums` | `mod_forum_get_forums_by_courses` |
-| `forum` | `mod_forum_get_forum_discussions` → falls back to `..._paginated` |
+| `forum` | `mod_forum_get_forum_discussions` → `..._paginated`; a cmid is resolved to the forum instance id via `core_course_get_course_module` |
 | `thread` | `mod_forum_get_discussion_posts` |
 | `assignments` / `assignment-detail` | `mod_assign_get_assignments` |
 | `assignment` | `core_course_get_course_module` + `mod_assign_get_submission_status` |
@@ -45,7 +45,8 @@ The token is minted once: `POST /login/token.php` with `username`, `password`,
 
 - **course id** — from `courses` / a `course/view.php?id=<course>` URL.
 - **cmid** (activity/module id) — from `course`; used by `assignment`, `download`.
-- **forum id** — the forum *instance* id from `forums <course>` (not the cmid).
+- **forum id** — the activity cmid from `forums <course>` or `course <course>`; `forum`
+  also accepts the forum's own instance id.
 - **discussion id (d)** — from `forum <id>` → `thread <d>`.
 - **post id** — from `thread <d>` → `reply <post>`.
 - **assignment ref** — instance id *or* cmid from `assignments <course>`; `assignment` takes the cmid.

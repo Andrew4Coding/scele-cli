@@ -6,8 +6,9 @@ A FakeSession returns canned JSON per wsfunction — no network, no token.
 
 from scele import api
 from scele.models import (
-    AssignmentStatus, CalendarEvent, Deadline, Grade, Notification, Person, Post,
+    AssignmentStatus, CalendarEvent, Deadline, Discussion, Grade, Notification, Person, Post,
 )
+from scele.session import RequestFailedError
 
 
 class FakeSession:
@@ -133,6 +134,36 @@ def test_people_maps_roles():
     p = api.people(s, "4234")[0]
     assert isinstance(p, Person)
     assert p.roles == ["editingteacher"] and p.groups == ["A"]
+
+
+def test_forum_accepts_a_cmid_and_resolves_it_to_the_instance():
+    def discussions(params):
+        if params["forumid"] != 17474:
+            raise RequestFailedError("Unable to find forum with id")
+        return {"discussions": [
+            {"discussion": 62561, "name": "D05", "userfullname": "Aimee",
+             "numreplies": 25, "created": 0, "timemodified": 0},
+        ]}
+
+    s = FakeSession({
+        "mod_forum_get_forum_discussions": discussions,
+        "mod_forum_get_forum_discussions_paginated": discussions,
+        "core_course_get_course_module": {"cm": {"id": 222560, "instance": 17474,
+                                                 "modname": "forum"}},
+    })
+    out = api.forum(s, "222560")  # 222560 is the activity cmid, 17474 the instance id
+    assert len(out) == 1 and isinstance(out[0], Discussion)
+    assert out[0].id == "62561"
+
+
+def test_forum_uses_instance_id_directly_without_extra_calls():
+    s = FakeSession({
+        "mod_forum_get_forum_discussions": {"discussions": [
+            {"discussion": 62561, "name": "D05", "userfullname": "Aimee", "numreplies": 1},
+        ]},
+    })
+    assert api.forum(s, "17474")[0].id == "62561"
+    assert [c[0] for c in s.calls] == ["mod_forum_get_forum_discussions"]
 
 
 def test_forum_reply_passes_subject_when_given():

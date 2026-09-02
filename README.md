@@ -104,8 +104,8 @@ scele notifications               # your SCELE notifications
 scele categories [--id 31]        # browse the catalog
 scele category 31                 # courses in a category
 
-scele forums 4234                 # forums in a course  (id = forum instance id)
-scele forum 17474                 # discussions in a forum
+scele forums 4234                 # forums in a course
+scele forum 222560                # discussions in a forum (cmid or instance id)
 scele thread 62493                # posts in a discussion (nested: parent + depth)
 scele post 17474 --subject "..." --message "..." --yes
 scele reply 553756 --message "..." --yes

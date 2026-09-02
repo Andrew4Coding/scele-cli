@@ -168,7 +168,7 @@ def build(group) -> dict:
         "id_conventions": {
             "course id": "from `scele courses` / URLs `course/view.php?id=<course>`",
             "cmid (activity/module id)": "from `scele course <id>`; used by assignment/resource",
-            "forum id": "forum instance id from `scele forums <course>` -> `scele forum <id>`",
+            "forum id": "activity cmid from `scele forums`/`scele course`; `scele forum` also takes the instance id",
             "discussion id (d)": "from `scele forum <id>` -> `scele thread <d>`",
             "post id": "from `scele thread <d>` -> `scele reply <post>`",
             "assignment ref": "instance id or cmid from `scele assignments <course>`",

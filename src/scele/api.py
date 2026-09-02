@@ -33,19 +33,46 @@ def _discussion_url(s: SceleSession, discussion_id) -> str:
     return f"{s.base}/mod/forum/discuss.php?d={discussion_id}"
 
 
-def _forum_discussions(s: SceleSession, forum_id: int, perpage: int = 50) -> list[dict]:
-    """Discussions in a forum, tolerating both the paginated and modern WS names."""
+def _forum_instance_id(s: SceleSession, forum_id: int) -> int:
+    """Accept either a forum instance id or an activity cmid; return the instance id.
+
+    `forums` / `course` hand out the activity cmid; `mod_forum_get_forum_discussions`
+    only accepts the forum's own instance id.
+    """
+    try:
+        cm = s.ws("core_course_get_course_module", cmid=forum_id) or {}
+        inst = (cm.get("cm") or {}).get("instance")
+        if inst and (cm.get("cm") or {}).get("modname") == "forum":
+            return int(inst)
+    except RequestFailedError:
+        pass
+    return forum_id
+
+
+def _discussions_for(s: SceleSession, fid: int, perpage: int) -> list[dict] | None:
+    """One forum id → its discussions, or None if SCELE rejects the id."""
     for fn, extra in (
         ("mod_forum_get_forum_discussions", {"sortorder": 1}),
-        ("mod_forum_get_forum_discussions_paginated", {"sortby": "timemodified",
-                                                       "sortdirection": "DESC"}),
+        ("mod_forum_get_forum_discussions_paginated",
+         {"sortby": "timemodified", "sortdirection": "DESC"}),
     ):
         try:
-            data = s.ws(fn, forumid=forum_id, page=0, perpage=perpage, **extra) or {}
-            return data.get("discussions") or []
+            data = s.ws(fn, forumid=fid, page=0, perpage=perpage, **extra) or {}
         except RequestFailedError:
             continue
-    return []
+        return data.get("discussions") or []
+    return None
+
+
+def _forum_discussions(s: SceleSession, forum_id: int, perpage: int = 50) -> list[dict]:
+    """Discussions in a forum, accepting a forum instance id or an activity cmid."""
+    got = _discussions_for(s, forum_id, perpage)
+    if got is not None:
+        return got
+    instance = _forum_instance_id(s, forum_id)
+    if instance != forum_id:
+        got = _discussions_for(s, instance, perpage)
+    return got or []
 
 
 def _news_forum_id(s: SceleSession) -> str | None:
@@ -158,14 +185,14 @@ def _activities(s: SceleSession, course_id: str, modtype: str) -> list[Activity]
 
 
 def forums(s: SceleSession, course_id: str) -> list[Activity]:
-    """Return the forums in a course (``cmid`` here is the forum instance id)."""
+    """Return the forums in a course. ``cmid`` is the activity id, as in ``course``."""
     data = s.ws("mod_forum_get_forums_by_courses", courseids=[int(course_id)]) or []
     return [
         Activity(
-            cmid=str(f.get("id")),
+            cmid=str(f.get("cmid") or f.get("id")),
             type=f.get("type") or "forum",
-            name=f.get("name") or "",
-            url=f"{s.base}/mod/forum/view.php?f={f.get('id')}",
+            name=clean_html(f.get("name")) or "",
+            url=f"{s.base}/mod/forum/view.php?id={f.get('cmid') or f.get('id')}",
             section=str(f.get("section") or ""),
         )
         for f in data
@@ -471,14 +498,16 @@ def enrol(s: SceleSession, course_id: str, instance_id: str | None = None, key: 
 def forum_subscribe(s: SceleSession, forum_id: str, discussion_id: str | None = None,
                     state: bool = True) -> bool:
     """Subscribe to (or unsubscribe from) a forum. Forum-level only."""
-    resp = s.ws("mod_forum_set_subscription_state", forumid=int(forum_id),
+    fid = _forum_instance_id(s, int(forum_id))
+    resp = s.ws("mod_forum_set_subscription_state", forumid=fid,
                 targetstate=1 if state else 0) or {}
     return bool(resp.get("subscribed", state)) if isinstance(resp, dict) else True
 
 
 def forum_post(s: SceleSession, forum_id: str, subject: str, message: str) -> str:
     """Start a new discussion in a forum; returns the new discussion URL."""
-    resp = s.ws("mod_forum_add_discussion", forumid=int(forum_id), subject=subject,
+    fid = _forum_instance_id(s, int(forum_id))
+    resp = s.ws("mod_forum_add_discussion", forumid=fid, subject=subject,
                 message=message) or {}
     did = resp.get("discussionid")
     return _discussion_url(s, did) if did else ""

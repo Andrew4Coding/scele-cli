@@ -1,0 +1,402 @@
+/* SceleCLI TUI Global Stylesheet */
+
+/* Screen Base */
+Screen {
+    background: $background;
+    color: $text;
+}
+
+/* Header & Footer */
+Header {
+    dock: top;
+    background: $panel;
+    color: $text;
+    text-style: bold;
+}
+
+Footer {
+    dock: bottom;
+    background: $panel;
+    color: $text-muted;
+}
+
+/* Data Table Styling */
+DataTable {
+    height: 1fr;
+    background: $surface;
+    border: tall $panel-lighten-1;
+}
+
+DataTable > .datatable--header {
+    background: $panel;
+    color: $text;
+    text-style: bold;
+}
+
+DataTable > .datatable--odd-row {
+    background: $surface-darken-1;
+}
+
+DataTable > .datatable--even-row {
+    background: $surface;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+    color: $text;
+    text-style: bold;
+}
+
+DataTable > .datatable--hover {
+    background: $accent 20%;
+}
+
+/* Tree Widget Styling */
+Tree {
+    background: $surface;
+    border: tall $panel-lighten-1;
+    padding: 1;
+    scrollbar-gutter: stable;
+}
+
+Tree:focus > .tree--cursor {
+    background: $accent;
+    color: $text;
+    text-style: bold;
+}
+
+Tree > .tree--highlight {
+    background: $accent 30%;
+}
+
+Tree > .tree--guides {
+    color: $text-muted;
+}
+
+/* Login Screen */
+LoginScreen {
+    align: center middle;
+    background: $background;
+}
+
+#login-container {
+    width: 64;
+    height: auto;
+    border: thick $primary;
+    background: $panel;
+    padding: 2 3;
+}
+
+#login-title {
+    width: 100%;
+    text-align: center;
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+#login-subtitle {
+    width: 100%;
+    text-align: center;
+    color: $text-muted;
+    margin-bottom: 2;
+}
+
+#login-form {
+    width: 100%;
+    height: auto;
+}
+
+.form-group {
+    margin-bottom: 1;
+    height: auto;
+}
+
+.form-label {
+    color: $text;
+    text-style: bold;
+    margin-bottom: 0;
+}
+
+#login-status {
+    width: 100%;
+    text-align: center;
+    margin-top: 1;
+    margin-bottom: 1;
+    height: auto;
+}
+
+#login-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+}
+
+/* Input Fields */
+Input {
+    border: tall $surface-lighten-2;
+    background: $surface;
+    color: $text;
+    margin-bottom: 1;
+}
+
+Input:focus {
+    border: tall $accent;
+}
+
+/* Buttons */
+Button {
+    margin: 0 1;
+    min-width: 12;
+    border: none;
+    text-style: bold;
+}
+
+
+Button.-primary {
+    background: $primary;
+    color: $text;
+}
+
+Button.-success {
+    background: $success;
+    color: $text;
+}
+
+Button.-error {
+    background: $error;
+    color: $text;
+}
+
+Button.-warning {
+    background: $warning;
+    color: $text;
+}
+
+Button.-default {
+    background: $surface-lighten-1;
+    color: $text;
+}
+
+/* Cards & Containers */
+.card {
+    background: $surface;
+    border: round $panel-lighten-2;
+    padding: 1 2;
+    margin: 1;
+    height: auto;
+}
+
+.card-title {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+.announcement-card {
+    background: $surface;
+    border: solid $accent;
+    padding: 1 2;
+    margin-bottom: 1;
+    height: auto;
+}
+
+.announcement-title {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 0;
+}
+
+.announcement-meta {
+    color: $text-muted;
+    margin-bottom: 1;
+}
+
+.announcement-content {
+    color: $text;
+}
+
+.post-card {
+    background: $surface;
+    border: round $panel-lighten-2;
+    padding: 1 2;
+    margin-bottom: 1;
+    height: auto;
+}
+
+.post-header {
+    height: auto;
+    margin-bottom: 1;
+}
+
+.post-author {
+    text-style: bold;
+    color: $primary;
+}
+
+.post-date {
+    color: $text-muted;
+}
+
+.post-subject {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+.post-message {
+    color: $text;
+}
+
+/* Loading Indicator */
+LoadingIndicator {
+    height: 100%;
+    width: 100%;
+    align: center middle;
+    color: $accent;
+}
+
+.loading-container {
+    height: 100%;
+    width: 100%;
+    align: center middle;
+}
+
+/* Layout Utilities */
+.sidebar {
+    width: 32;
+    dock: left;
+    height: 100%;
+    background: $panel;
+    border-right: solid $panel-lighten-1;
+    padding: 1;
+}
+
+.main-view {
+    height: 100%;
+    background: $background;
+    padding: 1;
+}
+
+.horizontal {
+    layout: horizontal;
+    height: auto;
+}
+
+.vertical {
+    layout: vertical;
+}
+
+.center {
+    align: center middle;
+}
+
+.hidden {
+    display: none;
+}
+
+.button-bar {
+    dock: bottom;
+    height: auto;
+    padding: 1;
+    background: $panel;
+    align-horizontal: right;
+}
+
+.status-bar {
+    dock: bottom;
+    height: 1;
+    background: $panel;
+    color: $text-muted;
+    padding: 0 1;
+}
+
+.error-text {
+    color: $error;
+    text-style: bold;
+}
+
+.success-text {
+    color: $success;
+    text-style: bold;
+}
+
+.dim {
+    color: $text-muted;
+}
+
+.bold {
+    text-style: bold;
+}
+
+/* Settings Screen */
+#settings-content {
+    height: 1fr;
+    padding: 1 2;
+}
+
+#settings-title {
+    color: $accent;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#settings-description {
+    color: $text-muted;
+    margin-bottom: 2;
+}
+
+#settings-theme-label, #settings-keymap-title {
+    text-style: bold;
+    color: $accent;
+    margin-bottom: 1;
+}
+
+#settings-theme {
+    width: 36;
+    margin-bottom: 2;
+}
+
+#settings-mode-label {
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+#settings-mode {
+    width: 36;
+    margin-bottom: 1;
+}
+
+#settings-mode-description {
+    color: $text-muted;
+    margin-bottom: 2;
+}
+
+.setting-row {
+    width: 100%;
+    height: 3;
+}
+
+.setting-label {
+    width: 36;
+    padding-top: 1;
+}
+
+.setting-input {
+    width: 28;
+}
+
+#settings-status {
+    height: auto;
+    min-height: 1;
+    margin-top: 1;
+}
+
+#settings-buttons {
+    width: 100%;
+    height: auto;
+    align-horizontal: right;
+    margin-top: 1;
+    padding-bottom: 1;
+}

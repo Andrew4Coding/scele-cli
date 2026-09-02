@@ -1,5 +1,6 @@
 """High-level SCELE operations built on SceleSession + parsers."""
 
+from collections.abc import Callable
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -135,8 +136,13 @@ def forum_reply(s: SceleSession, post_id: str, message: str) -> str:
     return resp.url
 
 
-def download(s: SceleSession, url_or_cmid: str, out_dir: Path) -> Path:
-    """Download a pluginfile URL, or resolve a resource cmid then download it."""
+def download(
+    s: SceleSession,
+    url_or_cmid: str,
+    out_dir: Path,
+    progress: Callable[[int, int | None], None] | None = None,
+) -> Path:
+    """Download a resource, optionally reporting bytes downloaded and total."""
     if url_or_cmid.isdigit():
         resp = s.get("/mod/resource/view.php", {"id": url_or_cmid})
         url = resp.url
@@ -151,9 +157,25 @@ def download(s: SceleSession, url_or_cmid: str, out_dir: Path) -> Path:
     fname = fname or url.rstrip("/").rsplit("/", 1)[-1] or "download"
     out_dir.mkdir(parents=True, exist_ok=True)
     dest = out_dir / fname
-    with open(dest, "wb") as fh:
-        for chunk in resp.iter_content(8192):
-            fh.write(chunk)
+    total_header = resp.headers.get("content-length")
+    try:
+        total = int(total_header) if total_header else None
+    except (TypeError, ValueError):
+        total = None
+    downloaded = 0
+    if progress:
+        progress(downloaded, total)
+    try:
+        with open(dest, "wb") as fh:
+            for chunk in resp.iter_content(8192):
+                if not chunk:
+                    continue
+                fh.write(chunk)
+                downloaded += len(chunk)
+                if progress:
+                    progress(downloaded, total)
+    finally:
+        resp.close()
     return dest
 
 

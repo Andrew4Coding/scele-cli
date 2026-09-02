@@ -62,4 +62,5 @@ Then ask your agent *"list my scele courses"* — it should run `scele whoami` t
 ## Keeping it current
 
 Re-run `npx skills update scele` (or the `npx scele-skill` command). Keep
-`skills/scele/SKILL.md` in sync with `AGENTS.md` and `scele schema` when commands change.
+`skills/scele/SKILL.md` in sync with `AGENTS.md.bak`, `src/scele/schema.py`, and
+`scele schema` when commands change.

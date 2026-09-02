@@ -64,7 +64,10 @@ Read-only: `courses`, `course-detail <id>`, `people <id>`, `grades <id>`,
 `course-updates <id>`, `deadlines`, `calendar`, `notifications`, `categories [--id N]`,
 `category <id>`, `course <id>`, `forums <id>`, `forum <id> [--limit N]`, `thread <d>`,
 `assignments <id>`, `assignment <cmid>`, `assignment-detail <ref>`,
-`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `quiz-attempt <attempt>`, `resources <id>`, `announcements`.
+`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `quiz-attempt <attempt>`, `resources <id>`, `announcements`, `whoami`, `logout`, `schema`.
+
+`scele tui` opens an interactive terminal UI over the same data (extra: `[tui]`); it
+prints no JSON document, so don't call it from a script.
 
 Writes (ask the human first; `post`/`reply`/`submit` also need `--yes` to skip their prompt):
 `enrol <course> [--key K]`, `subscribe <forum> [--off]`,

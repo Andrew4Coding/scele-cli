@@ -94,6 +94,7 @@ scele -c assignment 222043 | jq .fields
 ```bash
 scele login                       # prompts: SCELE username + password (hidden)
 scele whoami
+scele logout                      # delete the stored token
 
 scele courses                     # courses you are enrolled in
 scele course-detail 4234          # category, dates, teachers, summary

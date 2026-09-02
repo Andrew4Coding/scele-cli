@@ -75,7 +75,10 @@ Read-only: `courses`, `course-detail <id>`, `people <id>`, `grades <id>`,
 `category <id>`, `course <id>`, `forums <id>`, `forum <id> [--limit N]`, `thread <d>`,
 `assignments <id>`, `assignment <cmid>`, `assignment-detail <ref>`,
 `quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `quiz-attempt <attempt>`,
-`resources <id>`, `announcements`, `schema`, `whoami`.
+`resources <id>`, `announcements`, `schema`, `whoami`, `logout`.
+
+`scele tui` launches an interactive terminal UI over the same data (needs the `[tui]`
+extra: `pipx inject scele-cli textual`); it prints no JSON document.
 
 Writes — confirm with the user first; `post`/`reply`/`submit` also need `--yes`:
 `enrol <course> [--key K]`, `subscribe <forum> [--off]`,

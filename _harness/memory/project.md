@@ -18,7 +18,8 @@
 | Moodle mobile web-service API (v0.2.0) | `/login/token.php` accepts a password on SCELE; the WS API is stable JSON — no HTML breakage. Replaced the scraping layer (`parsers.py`, bs4/lxml) entirely. |
 | Token-only storage | The password is exchanged for a token at `login` and never persisted; `token.json` holds only the token. |
 | Stateless CLI — except `watch` | Read/write commands stay one-shot; `watch` adds an opt-in POSIX background daemon that re-runs a command on an interval |
-| Multi-channel distribution | Standalone binary (PyInstaller), Python package (pipx/pip), Agent Skill (SKILL.md) |
+| Multi-channel distribution | PyInstaller `--onedir` bundle (`scele-<os>-<arch>.tar.gz`, ~40× faster cold start than onefile; installed to `~/.local/lib/scele-app` with a `~/.local/bin/scele` symlink), Python package (pipx/pip), Agent Skill (SKILL.md) |
+| Bundled TUI assets | `packaging/scele.spec` collects the Textual stylesheet + data files so `scele tui` works from the frozen binary |
 | Centralized version in `__init__.py` | Consumed by Hatchling, CLI `--version`, and release scripts |
 
 ## Known quirks
@@ -34,10 +35,16 @@
 - Added pretty CLI output: default table on TTY, JSON when piped, `-f` format flags
 - Added `watch` command group: background monitor for any subcommand, git-style unified diff
   of canonical JSON output, webhook notifications.
-- v0.2.0 (branch `feat/moodle-ws-api`) — replaced HTML scraping with the Moodle mobile
+- Added the interactive TUI (`scele tui`, `[tui]` extra → `textual`); dashboard/course/
+  forum/assignment/quiz screens over the same data as the CLI.
+- v0.2.0 (PR #4, merged to `main`) — replaced HTML scraping with the Moodle mobile
   web-service API. New commands: `course-detail`, `people`, `grades`, `course-updates`,
-  `deadlines`, `calendar`, `notifications`, `assignment-detail`, `submit`. Dropped
+  `deadlines`, `calendar`, `notifications`, `assignment-detail`, `submit`,
+  `quiz-review`, `quiz-attempt`, `quiz-answer`, `quiz-start`. Dropped
   `beautifulsoup4` / `lxml`. `forums` now returns forum *instance* ids.
+- Packaging: switched the prebuilt binary from PyInstaller onefile to `--onedir`
+  (commits f16b092, 62c9882, 13d5f4c); `install-bin.sh`/`.ps1` unpack the tarball
+  bundle and README documents it.
 
 ## `watch` design notes
 

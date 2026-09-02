@@ -1,8 +1,10 @@
 #!/usr/bin/env sh
-# Build a standalone `scele` binary for the current OS/arch into ./dist/.
+# Build a standalone `scele` onedir bundle for the current OS/arch into ./dist/scele/.
 #
-#   scripts/build-binary.sh            -> dist/scele            (or dist/scele.exe on Windows)
-#   scripts/build-binary.sh --name X   -> dist/X
+#   scripts/build-binary.sh            -> dist/scele/scele  (dist/scele/scele.exe on Windows)
+#
+# onedir, not onefile: onefile re-extracts its archive on every run (seconds);
+# onedir starts in ~0.1s. The release workflow ships dist/scele/ as a tarball.
 #
 # Requires: Python 3.10+ with the `build` extra ( pip install -e ".[build]" ).
 set -eu
@@ -26,8 +28,8 @@ fi
     --clean --noconfirm \
     --distpath dist --workpath build/pyinstaller
 
-BIN="dist/scele"
+BIN="dist/scele/scele"
 [ -f "$BIN.exe" ] && BIN="$BIN.exe"
 echo
-echo "Built: $BIN"
+echo "Built: $BIN  (bundle: dist/scele/)"
 "$BIN" --version

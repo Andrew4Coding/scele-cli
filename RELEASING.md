@@ -10,14 +10,24 @@ git push origin main --follow-tags
 
 Pushing the `v*` tag triggers `.github/workflows/release.yml`, which:
 
-1. builds a standalone binary on 5 runners
+1. builds the `scele` **onedir bundle** on 5 runners
    (`linux-x86_64`, `linux-aarch64`, `macos-x86_64`, `macos-arm64`, `windows-x86_64`),
-2. builds the Python `sdist` + `wheel`,
-3. creates the GitHub Release `v0.2.0` with every binary, `checksums.txt`, and auto-generated
-   notes.
+2. packs each `dist/scele/` as `scele-<target>.tar.gz` (`.zip` on Windows),
+3. builds the Python `sdist` + `wheel`,
+4. creates the GitHub Release with every archive, `checksums.txt`, and auto-generated notes.
 
 You can also re-run it for an existing tag from the Actions tab
 (**Release → Run workflow → tag**).
+
+> The bundle is **onedir**, not onefile: a onefile binary re-extracts its whole
+> archive to a temp dir on every run (multiple seconds); onedir starts in ~0.1s.
+> `install-bin.sh` / `install-bin.ps1` unpack the archive to
+> `~/.local/lib/scele-app` (or `%LOCALAPPDATA%\Programs\scele`) and link
+> `scele` onto `PATH`.
+>
+> If you restore `release.yml` from history, its **Package** step still `cp`s a
+> single file — change it to tar/zip `dist/scele/` and name the asset
+> `scele-<target>.tar.gz` / `.zip`.
 
 ## Version source
 
@@ -27,8 +37,9 @@ You can also re-run it for an existing tag from the Actions tab
 ## Build a binary locally
 
 ```bash
-pip install -e ".[build]"
-scripts/build-binary.sh        # -> dist/scele  (this OS/arch only; PyInstaller can't cross-compile)
+pip install -e ".[build]"        # add ".[build,tui]" to bundle the `scele tui` UI
+scripts/build-binary.sh          # -> dist/scele/  (this OS/arch only; no cross-compile)
+tar -czf scele-macos-arm64.tar.gz -C dist scele   # what the workflow ships
 ```
 
 ## What users run
@@ -36,7 +47,7 @@ scripts/build-binary.sh        # -> dist/scele  (this OS/arch only; PyInstaller 
 | method | command | needs |
 |---|---|---|
 | binary (raw script) | `curl -fsSL https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.sh \| sh` | nothing |
-| binary (manual) | download `scele-<os>-<arch>` from the Release, `chmod +x`, move onto `PATH` | nothing |
+| binary (manual) | download `scele-<os>-<arch>.tar.gz`, unpack, run `scele/scele` (link it onto `PATH`) | nothing |
 | Python | `pipx install git+https://github.com/Andrew4Coding/scele-cli.git` | Python 3.10+, pipx |
 | from clone | `./install.sh` / `.\install.ps1` | Python 3.10+ |
 | agent skill | `npx skills add Andrew4Coding/scele-cli` | node |

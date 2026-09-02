@@ -9,7 +9,7 @@ The skill and the CLI install separately:
 | | what it is | install |
 |---|---|---|
 | **CLI** | the `scele` command | `curl -fsSL https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.sh \| sh` (binary, no Python) — or `pipx install git+https://github.com/Andrew4Coding/scele-cli.git` |
-| **Skill** | instructions telling an agent *when and how* to call `scele` | `npx skills add Andrew4Coding/scele-cli` |
+| **Skill** | instructions telling an agent *when and how* to call `scele` | `npm install -g scele-skill` or `npx skills add Andrew4Coding/scele-cli` |
 
 ## Install the skill — `npx skills`
 
@@ -26,10 +26,21 @@ npx skills update scele
 It clones the repo, finds `skills/scele/SKILL.md`, and links it into your agent's skills
 directory (`~/.claude/skills/` global, or `./.claude/skills/` in a project).
 
-## Install the skill — bundled installer
+## Install the skill — bundled installer (`npm` / `npx`)
 
-`npx scele-skill` (this repo's `bin/install-skill.mjs`, zero deps) does the same copy and can
-also install the CLI in one step:
+Install globally via npm so `scele-skill` is added to your `PATH`:
+
+```bash
+npm install -g scele-skill
+
+scele-skill                 # -> ~/.claude/skills/scele/   (user scope)
+scele-skill --project       # -> ./.claude/skills/scele/   (repo scope)
+scele-skill --dir <path>    # -> <path>/scele/
+scele-skill --with-cli      # also runs ./install.sh or .\install.ps1
+scele-skill --uninstall     # remove the installed skill
+```
+
+Or run on-demand with `npx` without a global install:
 
 ```bash
 npx scele-skill                 # -> ~/.claude/skills/scele/
@@ -37,9 +48,6 @@ npx scele-skill --project       # -> ./.claude/skills/scele/
 npx scele-skill --with-cli      # also runs ./install.sh or .\install.ps1
 npx scele-skill --uninstall
 ```
-
-Point `npx` at the source until published: `npx github:Andrew4Coding/scele-cli …` or
-`npx /path/to/scele_cli …`.
 
 ## Manual install (no npx)
 

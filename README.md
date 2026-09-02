@@ -47,10 +47,30 @@ git clone https://github.com/Andrew4Coding/scele-cli.git && cd scele-cli
 .\install.ps1           # Windows PowerShell
 ```
 
+### With npm (global)
+
+```bash
+npm install -g scele-skill
+```
+
+As a CLI tool, `-g` installs it globally onto your `PATH`. Then run:
+
+```bash
+scele-skill                 # installs the agent skill (~/.claude/skills/scele/)
+scele-skill --with-cli      # also installs the scele Python CLI
+```
+
+Or run directly without global installation using `npx`:
+
+```bash
+npx scele-skill --with-cli
+```
+
 ### As an agent skill
 
 ```bash
-npx skills add Andrew4Coding/scele-cli     
+npx skills add Andrew4Coding/scele-cli     # via vercel-labs/skills
+npm install -g scele-skill                 # or via bundled npm installer
 ```
 
 See [SKILLS.md](SKILLS.md) and [RELEASING.md](RELEASING.md).

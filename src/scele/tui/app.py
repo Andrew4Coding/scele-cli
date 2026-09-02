@@ -172,7 +172,7 @@ class SceleApp(App):
         )
         self.notify(
             "[b]Key Bindings:[/b]\n"
-            "q: Quit  |  d: Theme  |  f2: Settings  |  r: Refresh\n"
+            "q: Quit  |  d: Theme  |  f2: Settings  |  r: Refresh  |  f: Find\n"
             + vim_hint,
             title="Help",
             timeout=5,

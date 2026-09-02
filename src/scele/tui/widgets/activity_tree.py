@@ -3,14 +3,14 @@ from textual.widgets import Tree
 from ...models import Activity, Section
 
 TYPE_ICONS = {
-    "forum": "💬",
-    "assign": "📋",
-    "resource": "📄",
-    "folder": "📁",
-    "url": "🔗",
-    "page": "📝",
-    "quiz": "❓",
-    "label": "🏷️",
+    "forum": "◇",
+    "assign": "▤",
+    "resource": "▦",
+    "folder": "▸",
+    "url": "↗",
+    "page": "≡",
+    "quiz": "?",
+    "label": "•",
 }
 
 
@@ -31,11 +31,11 @@ class ActivityTree(Tree):
         self.clear()
         self.root.expand()
         for sec in sections:
-            label = f"📂 {sec.name}" if sec.name else "📂 (unnamed)"
+            label = f"▸ {sec.name}" if sec.name else "▸ (unnamed)"
             node = self.root.add(label, expand=True)
             if sec.summary:
                 node.add_leaf(f"[dim]{sec.summary[:100]}[/dim]")
             for act in sec.activities:
-                icon = TYPE_ICONS.get(act.type, "📎")
+                icon = TYPE_ICONS.get(act.type, "·")
                 node.add_leaf(f"{icon} [{act.type}] {act.name}", data=act)
         self.loading = False

@@ -10,16 +10,20 @@ from textual.widgets import DataTable, Footer, Header, Static
 from ... import api
 from ...models import Announcement, Course
 from ...session import NotAuthenticatedError
+from ..widgets.search import FIND_BINDING, SearchableScreen, SearchBar
 
 
-class DashboardScreen(Screen[None]):
+class DashboardScreen(SearchableScreen, Screen[None]):
     """Main dashboard showing courses and announcements."""
 
     BINDINGS = [
         Binding("r", "refresh", "Refresh", id="dashboard.refresh"),
         Binding("a", "announcements", "Announcements", id="dashboard.announcements"),
         Binding("escape", "go_back", "Back", id="navigation.back"),
+        FIND_BINDING,
     ]
+
+    search_focus = "#courses-table"
 
     DEFAULT_CSS = """
     #dashboard-layout {
@@ -59,10 +63,11 @@ class DashboardScreen(Screen[None]):
         yield Header()
         with Horizontal(id="dashboard-layout"):
             with Vertical(id="courses-panel"):
-                yield Static("📚 My Courses", id="courses-title")
+                yield Static("MY COURSES", id="courses-title")
+                yield SearchBar()
                 yield DataTable(id="courses-table")
             with Vertical(id="announcements-panel"):
-                yield Static("📢 Announcements", id="announcements-title")
+                yield Static("ANNOUNCEMENTS", id="announcements-title")
                 yield VerticalScroll(id="announcements-list")
         yield Footer()
 
@@ -71,6 +76,7 @@ class DashboardScreen(Screen[None]):
         table.add_columns("ID", "Name", "Category")
         table.cursor_type = "row"
         table.loading = True
+        self._courses: list[Course] = []
         self._load_data()
 
     @work(thread=True)
@@ -88,11 +94,9 @@ class DashboardScreen(Screen[None]):
             self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
 
     def _populate(self, courses: list[Course], announcements: list[Announcement]) -> None:
-        table = self.query_one("#courses-table", DataTable)
-        table.clear()
-        for c in courses:
-            table.add_row(c.id, c.name, c.category, key=c.id)
-        table.loading = False
+        self._courses = courses
+        self._render_courses()
+        self.query_one("#courses-table", DataTable).loading = False
 
         ann_list = self.query_one("#announcements-list", VerticalScroll)
         ann_list.remove_children()
@@ -109,6 +113,19 @@ class DashboardScreen(Screen[None]):
             )
         if not announcements:
             ann_list.mount(Static("[dim]No announcements[/dim]"))
+
+    def _render_courses(self) -> None:
+        """Fill the courses table with rows that match the active filter."""
+        table = self.query_one("#courses-table", DataTable)
+        table.clear()
+        query = self.search_query
+        for c in self._courses:
+            if query and query not in f"{c.id} {c.name} {c.category}".lower():
+                continue
+            table.add_row(c.id, c.name, c.category, key=c.id)
+
+    def filter_list(self, query: str) -> None:
+        self._render_courses()
 
     @on(DataTable.RowSelected, "#courses-table")
     def on_course_selected(self, event: DataTable.RowSelected) -> None:

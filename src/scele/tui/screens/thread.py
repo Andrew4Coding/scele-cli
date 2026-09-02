@@ -26,7 +26,7 @@ class ThreadScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Static(f"🧵 Thread {self.discussion_id}", id="thread-title")
+        yield Static(f"THREAD {self.discussion_id}", id="thread-title")
         yield VerticalScroll(id="posts-container")
         yield Footer()
 

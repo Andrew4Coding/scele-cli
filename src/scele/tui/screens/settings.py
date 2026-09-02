@@ -88,7 +88,7 @@ class SettingsScreen(Screen):
         ]
         yield Header()
         with VerticalScroll(id="settings-content"):
-            yield Static("TUI settings", id="settings-title")
+            yield Static("TUI SETTINGS", id="settings-title")
             yield Static(
                 "Preferences are stored locally in tui.json. Credentials are never stored here.",
                 id="settings-description",
@@ -111,7 +111,7 @@ class SettingsScreen(Screen):
                 "Vim mode uses h/j/k/l for back, movement, and selection. Text fields keep normal editing.",
                 id="settings-mode-description",
             )
-            yield Static("Keyboard shortcuts", id="settings-keymap-title")
+            yield Static("KEYBOARD SHORTCUTS", id="settings-keymap-title")
             for action, label in KEYBINDING_LABELS:
                 input_id = self._input_id(action)
                 with Horizontal(classes="setting-row"):

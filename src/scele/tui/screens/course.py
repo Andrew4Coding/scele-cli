@@ -7,36 +7,42 @@ from textual.widgets import Footer, Header, Static, Tree
 from ... import api
 from ...models import Activity
 from ...session import NotAuthenticatedError
+from ..widgets.search import FIND_BINDING, SearchableScreen, SearchBar
 
 # Type icons for activities
 TYPE_ICONS = {
-    "forum": "💬",
-    "assign": "📋",
-    "resource": "📄",
-    "folder": "📁",
-    "url": "🔗",
-    "page": "📝",
-    "quiz": "❓",
-    "label": "🏷️",
+    "forum": "◇",
+    "assign": "▤",
+    "resource": "▦",
+    "folder": "▸",
+    "url": "↗",
+    "page": "≡",
+    "quiz": "?",
+    "label": "•",
 }
 
 
-class CourseScreen(Screen):
+class CourseScreen(SearchableScreen, Screen):
     """Course outline showing sections and activities."""
 
     BINDINGS = [
         Binding("escape", "go_back", "Back", id="navigation.back"),
         Binding("backspace", "go_back", "Back", show=False),
         Binding("r", "refresh", "Refresh", id="course.refresh"),
+        FIND_BINDING,
     ]
+
+    search_focus = "#course-tree"
 
     def __init__(self, course_id: str):
         super().__init__()
         self.course_id = course_id
+        self._sections = []
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Static(f"📖 Course {self.course_id}", id="course-title")
+        yield Static(f"COURSE {self.course_id}", id="course-title")
+        yield SearchBar()
         yield Tree("Sections", id="course-tree")
         yield Footer()
 
@@ -58,18 +64,36 @@ class CourseScreen(Screen):
             self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
 
     def _populate_tree(self, sections) -> None:
+        self._sections = sections
+        self._render_tree()
+        self.query_one("#course-tree", Tree).loading = False
+
+    def _render_tree(self) -> None:
+        """Rebuild the tree, keeping only sections/activities that match the filter."""
         tree = self.query_one("#course-tree", Tree)
         tree.clear()
-        for sec in sections:
-            section_label = f"📂 {sec.name}" if sec.name else "📂 (unnamed section)"
+        query = self.search_query
+        for sec in self._sections:
+            section_hit = not query or query in (sec.name or "").lower()
+            matched = [
+                act
+                for act in sec.activities
+                if query in f"{act.type} {act.name}".lower()
+            ]
+            if query and not section_hit and not matched:
+                continue
+            activities = sec.activities if section_hit else matched
+            section_label = f"▸ {sec.name}" if sec.name else "▸ (unnamed section)"
             section_node = tree.root.add(section_label, expand=True)
-            if sec.summary:
+            if sec.summary and not query:
                 section_node.add_leaf(f"[dim]{sec.summary[:100]}[/dim]")
-            for act in sec.activities:
-                icon = TYPE_ICONS.get(act.type, "📎")
+            for act in activities:
+                icon = TYPE_ICONS.get(act.type, "·")
                 label = f"{icon} [{act.type}] {act.name}"
                 section_node.add_leaf(label, data=act)
-        tree.loading = False
+
+    def filter_list(self, query: str) -> None:
+        self._render_tree()
 
     def on_tree_node_selected(self, event: Tree.NodeSelected) -> None:
         """Handle selection of a tree node (activity)."""

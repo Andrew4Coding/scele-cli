@@ -56,7 +56,7 @@ class LoginScreen(Screen[None]):
         with Middle():
             with Center():
                 with Vertical(id="login-form"):
-                    yield Static("🎓 SCELE TUI", id="login-title")
+                    yield Static("SCELE TUI", id="login-title")
                     yield Static("Fasilkom UI — Moodle Client", id="login-subtitle")
                     yield Input(placeholder="Username", id="username")
                     yield Input(placeholder="Password", password=True, id="password")
@@ -103,5 +103,5 @@ class LoginScreen(Screen[None]):
             self.app.call_from_thread(self._show_error, str(e))
 
     def _show_error(self, msg: str) -> None:
-        self.query_one("#login-status", Label).update(f"❌ {msg}")
+        self.query_one("#login-status", Label).update(f"[!] {msg}")
         self.query_one("#login-btn", Button).disabled = False

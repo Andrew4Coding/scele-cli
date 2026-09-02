@@ -6,9 +6,10 @@ from textual.widgets import DataTable, Footer, Header, Static
 
 from ... import api
 from ...session import NotAuthenticatedError
+from ..widgets.search import FIND_BINDING, SearchableScreen, SearchBar
 
 
-class ForumScreen(Screen):
+class ForumScreen(SearchableScreen, Screen):
     """Forum view showing discussions."""
 
     BINDINGS = [
@@ -16,15 +17,20 @@ class ForumScreen(Screen):
         Binding("backspace", "go_back", "Back", show=False),
         Binding("r", "refresh", "Refresh", id="forum.refresh"),
         Binding("n", "new_discussion", "New discussion", id="forum.new_discussion"),
+        FIND_BINDING,
     ]
+
+    search_focus = "#forum-table"
 
     def __init__(self, forum_id: str):
         super().__init__()
         self.forum_id = forum_id
+        self._discussions = []
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Static(f"💬 Forum {self.forum_id}", id="forum-title")
+        yield Static(f"FORUM {self.forum_id}", id="forum-title")
+        yield SearchBar()
         yield DataTable(id="forum-table")
         yield Footer()
 
@@ -33,7 +39,6 @@ class ForumScreen(Screen):
         table.add_columns("ID", "Name", "Author", "Replies", "Last Post")
         table.cursor_type = "row"
         table.loading = True
-        self._discussions = []  # Store discussions for lookup
         self._load_forum()
 
     @work(thread=True)
@@ -49,14 +54,25 @@ class ForumScreen(Screen):
 
     def _populate(self, discussions) -> None:
         self._discussions = discussions
-        table = self.query_one("#forum-table", DataTable)
-        table.clear()
-        for d in discussions:
-            replies = str(d.replies) if d.replies is not None else "—"
-            table.add_row(d.id, d.name, d.author, replies, d.last_post, key=d.id)
-        table.loading = False
+        self._render_rows()
+        self.query_one("#forum-table", DataTable).loading = False
         if not discussions:
             self.notify("No discussions in this forum", severity="warning")
+
+    def _render_rows(self) -> None:
+        """Fill the table with discussions that match the active filter."""
+        table = self.query_one("#forum-table", DataTable)
+        table.clear()
+        query = self.search_query
+        for d in self._discussions:
+            haystack = f"{d.id} {d.name} {d.author} {d.last_post}".lower()
+            if query and query not in haystack:
+                continue
+            replies = str(d.replies) if d.replies is not None else "—"
+            table.add_row(d.id, d.name, d.author, replies, d.last_post, key=d.id)
+
+    def filter_list(self, query: str) -> None:
+        self._render_rows()
 
     @on(DataTable.RowSelected, "#forum-table")
     def on_discussion_selected(self, event: DataTable.RowSelected) -> None:

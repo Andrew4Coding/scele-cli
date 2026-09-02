@@ -72,7 +72,7 @@ class DownloadModal(ModalScreen[dict[str, object] | None]):
         with Middle():
             with Center():
                 with Vertical(id="download-dialog"):
-                    yield Static("Download course resource", id="download-title")
+                    yield Static("DOWNLOAD COURSE RESOURCE", id="download-title")
                     yield Static(self.resource_name, id="download-target")
                     yield Label("Save to directory", classes="form-label")
                     yield Input(value=".", id="download-dir")

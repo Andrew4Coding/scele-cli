@@ -19,7 +19,7 @@ class _ForumComposerModal(ModalScreen[dict[str, object] | None]):
     ]
 
     subject_required = False
-    heading = "Compose forum message"
+    heading = "COMPOSE FORUM MESSAGE"
     confirm_label = "Post"
 
     DEFAULT_CSS = """
@@ -145,7 +145,7 @@ class NewDiscussionModal(_ForumComposerModal):
     """Confirmation modal for starting a new discussion."""
 
     subject_required = True
-    heading = "Start a new discussion"
+    heading = "START A NEW DISCUSSION"
 
     def __init__(self, forum_id: str) -> None:
         super().__init__()
@@ -161,7 +161,7 @@ class NewDiscussionModal(_ForumComposerModal):
 class ReplyModal(_ForumComposerModal):
     """Confirmation modal for replying to a selected forum post."""
 
-    heading = "Reply to forum post"
+    heading = "REPLY TO FORUM POST"
     confirm_label = "Reply"
 
     def __init__(self, post_id: str) -> None:

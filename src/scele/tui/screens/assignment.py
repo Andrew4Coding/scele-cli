@@ -25,7 +25,7 @@ class AssignmentScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield VerticalScroll(
-            Static(f"📋 Assignment {self.cmid}", id="assignment-title"),
+            Static(f"ASSIGNMENT {self.cmid}", id="assignment-title"),
             Static("", id="assignment-name"),
             Static("─" * 50, classes="separator"),
             Vertical(id="assignment-fields"),
@@ -72,7 +72,7 @@ class AssignmentScreen(Screen):
 
         # Populate files table
         if status.files:
-            self.query_one("#files-header", Static).update("[b]📎 Attached Files[/b]")
+            self.query_one("#files-header", Static).update("[b]ATTACHED FILES[/b]")
             table = self.query_one("#files-table", DataTable)
             table.clear()
             table.display = True

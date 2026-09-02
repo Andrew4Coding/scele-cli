@@ -7,20 +7,29 @@ from textual.widgets import Footer, Header, Static
 
 from ... import api
 from ...session import NotAuthenticatedError
+from ..widgets.search import FIND_BINDING, SearchableScreen, SearchBar
 
 
-class AnnouncementsScreen(Screen):
+class AnnouncementsScreen(SearchableScreen, Screen):
     """Full announcements view."""
 
     BINDINGS = [
         Binding("escape", "go_back", "Back", id="navigation.back"),
         Binding("backspace", "go_back", "Back", show=False),
         Binding("r", "refresh", "Refresh", id="announcements.refresh"),
+        FIND_BINDING,
     ]
+
+    search_focus = "#announcements-list"
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._announcements = []
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Static("📢 Announcements", id="announcements-title")
+        yield Static("ANNOUNCEMENTS", id="announcements-title")
+        yield SearchBar()
         yield VerticalScroll(id="announcements-list")
         yield Footer()
 
@@ -40,15 +49,28 @@ class AnnouncementsScreen(Screen):
             self.app.call_from_thread(self.notify, f"Error: {e}", severity="error")
 
     def _populate(self, announcements) -> None:
+        self._announcements = announcements
+        self.query_one("#announcements-list", VerticalScroll).loading = False
+        self._render_cards()
+
+    def _render_cards(self) -> None:
+        """Show announcement cards that match the active filter."""
         container = self.query_one("#announcements-list", VerticalScroll)
         container.remove_children()
-        container.loading = False
+        query = self.search_query
+        items = [
+            ann
+            for ann in self._announcements
+            if not query
+            or query in f"{ann.subject} {ann.author} {ann.body}".lower()
+        ]
 
-        if not announcements:
-            container.mount(Static("[dim]No announcements[/dim]"))
+        if not items:
+            empty = "[dim]No announcements[/dim]" if not query else "[dim]No matches[/dim]"
+            container.mount(Static(empty))
             return
 
-        for i, ann in enumerate(announcements, 1):
+        for i, ann in enumerate(items, 1):
             # Build announcement card content
             card_content = (
                 f"[b]#{i}. {ann.subject}[/b]\n"
@@ -62,6 +84,9 @@ class AnnouncementsScreen(Screen):
             container.mount(
                 Static(card_content, classes="announcement-card")
             )
+
+    def filter_list(self, query: str) -> None:
+        self._render_cards()
 
     def action_go_back(self) -> None:
         self.app.pop_screen()

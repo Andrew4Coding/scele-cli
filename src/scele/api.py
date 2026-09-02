@@ -94,7 +94,7 @@ def my_courses(s: SceleSession) -> list[Course]:
     out = [
         Course(
             id=str(c.get("id")),
-            name=c.get("fullname") or c.get("shortname") or "",
+            name=clean_html(c.get("fullname") or c.get("shortname")),
             url=f"{s.base}/course/view.php?id={c.get('id')}",
             shortname=c.get("shortname") or "",
             category=str(c.get("category") or ""),
@@ -121,8 +121,8 @@ def course_detail(s: SceleSession, course_id: str) -> CourseDetail:
     return CourseDetail(
         id=str(c.get("id")),
         shortname=c.get("shortname") or "",
-        fullname=c.get("fullname") or "",
-        category=c.get("categoryname") or str(c.get("categoryid") or ""),
+        fullname=clean_html(c.get("fullname")),
+        category=clean_html(c.get("categoryname")) or str(c.get("categoryid") or ""),
         summary=clean_html(c.get("summary"), 1200),
         start=wib(c.get("startdate")),
         end=wib(c.get("enddate")),
@@ -137,7 +137,7 @@ def categories(s: SceleSession, category_id: str | None = None) -> list[Category
     return [
         Category(
             id=str(c.get("id")),
-            name=c.get("name") or "",
+            name=clean_html(c.get("name")),
             url=f"{s.base}/course/index.php?categoryid={c.get('id')}",
             course_count=c.get("coursecount"),
         )
@@ -151,7 +151,7 @@ def courses_in_category(s: SceleSession, category_id: str) -> list[Course]:
     return [
         Course(
             id=str(c.get("id")),
-            name=c.get("fullname") or "",
+            name=clean_html(c.get("fullname")),
             url=f"{s.base}/course/view.php?id={c.get('id')}",
             shortname=c.get("shortname") or "",
             category=str(category_id),
@@ -169,14 +169,14 @@ def course(s: SceleSession, course_id: str) -> list[Section]:
             Activity(
                 cmid=str(m.get("id")),
                 type=m.get("modname") or "",
-                name=m.get("name") or "",
+                name=clean_html(m.get("name")),
                 url=m.get("url") or "",
-                section=sec.get("name") or "",
+                section=clean_html(sec.get("name")),
             )
             for m in (sec.get("modules") or [])
         ]
         out.append(Section(
-            name=sec.get("name") or "",
+            name=clean_html(sec.get("name")),
             summary=clean_html(sec.get("summary"), 600),
             activities=acts,
         ))
@@ -212,17 +212,17 @@ def resources(s: SceleSession, course_id: str) -> list[Resource]:
                 continue
             files = m.get("contents") or []
             if not files:
-                out.append(Resource(cmid=str(m.get("id")), name=m.get("name") or "",
-                                    type=m.get("modname") or "", section=sec.get("name") or ""))
+                out.append(Resource(cmid=str(m.get("id")), name=clean_html(m.get("name")),
+                                    type=m.get("modname") or "", section=clean_html(sec.get("name"))))
             for f in files:
                 out.append(Resource(
                     cmid=str(m.get("id")),
-                    name=m.get("name") or f.get("filename") or "",
+                    name=clean_html(m.get("name") or f.get("filename")),
                     type=m.get("modname") or "",
                     fileurl=f.get("fileurl") or "",
                     filename=f.get("filename") or "",
                     filesize=f.get("filesize"),
-                    section=sec.get("name") or "",
+                    section=clean_html(sec.get("name")),
                 ))
     return out
 
@@ -245,7 +245,7 @@ def _assignment_info(s: SceleSession, a: dict) -> AssignmentInfo:
         id=str(a.get("id")),
         cmid=str(a.get("cmid")),
         course_id=str(a.get("course")),
-        name=a.get("name") or "",
+        name=clean_html(a.get("name")),
         due=wib(due),
         due_in=until(due),
         cutoff=wib(cutoff),
@@ -281,7 +281,7 @@ def forum(s: SceleSession, forum_id: str, limit: int = 50) -> list[Discussion]:
         did = d.get("discussion") or d.get("id")
         out.append(Discussion(
             id=str(did),
-            name=d.get("name") or d.get("subject") or "",
+            name=clean_html(d.get("name") or d.get("subject")),
             url=_discussion_url(s, did),
             author=d.get("userfullname") or "",
             replies=d.get("numreplies"),
@@ -305,7 +305,7 @@ def thread(s: SceleSession, discussion_id: str) -> list[Post]:
             id=str(p.get("id")),
             author=(author.get("fullname") if author else p.get("userfullname")) or "",
             created=wib(p.get("timecreated") or p.get("created")),
-            subject=p.get("subject") or "",
+            subject=clean_html(p.get("subject")),
             body=clean_html((p.get("message") if isinstance(p.get("message"), str)
                              else (p.get("message") or {}).get("text")) or ""),
             parent=str(parent) if parent else "",
@@ -353,7 +353,7 @@ def assignment(s: SceleSession, cmid: str) -> AssignmentStatus:
     }
     if onlinetext:
         fields["Online text"] = onlinetext
-    return AssignmentStatus(cmid=str(cmid), name=cm.get("name") or "",
+    return AssignmentStatus(cmid=str(cmid), name=clean_html(cm.get("name")),
                             fields={k: v for k, v in fields.items() if v}, files=files)
 
 
@@ -366,7 +366,7 @@ def announcements(s: SceleSession) -> list[Announcement]:
     for d in _forum_discussions(s, int(fid), 25):
         did = d.get("discussion") or d.get("id")
         out.append(Announcement(
-            subject=d.get("name") or d.get("subject") or "",
+            subject=clean_html(d.get("name") or d.get("subject")),
             author=d.get("userfullname") or "",
             date=wib(d.get("created")),
             body=clean_html(d.get("message"), 4000),
@@ -388,11 +388,11 @@ def grades(s: SceleSession, course_id: str) -> list[Grade]:
             if item.get("grademin") is not None and item.get("grademax") is not None:
                 rng = f"{item['grademin']:g}–{item['grademax']:g}"
             out.append(Grade(
-                item=item.get("itemname") or item.get("itemtype") or "(item)",
+                item=clean_html(item.get("itemname")) or item.get("itemtype") or "(item)",
                 type=item.get("itemtype") or "",
-                grade=item.get("gradeformatted") or "",
-                range=item.get("rangeformatted") or rng,
-                percentage=item.get("percentageformatted") or "",
+                grade=clean_html(item.get("gradeformatted")),
+                range=clean_html(item.get("rangeformatted")) or rng,
+                percentage=clean_html(item.get("percentageformatted")),
                 feedback=clean_html(item.get("feedback"), 500),
                 graded=wib(item.get("gradedategraded")),
             ))
@@ -409,7 +409,7 @@ def deadlines(s: SceleSession, days: int = 14, limit: int = 25) -> list[Deadline
     for e in data.get("events") or []:
         c = e.get("course") or {}
         out.append(Deadline(
-            name=e.get("name") or "",
+            name=clean_html(e.get("name")),
             course=c.get("shortname") or c.get("fullname") or "",
             course_id=str(c.get("id") or ""),
             when=wib(e.get("timesort")),
@@ -486,7 +486,7 @@ def people(s: SceleSession, course_id: str) -> list[Person]:
     return [
         Person(
             id=str(u.get("id")),
-            name=u.get("fullname") or "",
+            name=clean_html(u.get("fullname")),
             roles=[r.get("shortname") for r in (u.get("roles") or []) if r.get("shortname")],
             email=u.get("email") or "",
             groups=[g.get("name") for g in (u.get("groups") or []) if g.get("name")],

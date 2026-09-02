@@ -3,6 +3,7 @@ web-service API. Every function takes a :class:`SceleSession`.
 """
 
 import os
+import re
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -10,12 +11,13 @@ from pathlib import Path
 from .models import (
     Activity, Announcement, AssignmentInfo, AssignmentStatus, CalendarEvent, Category,
     Course, CourseDetail, Deadline, Discussion, Grade, Notification, Person, Post,
-    Resource, Section,
+    Quiz, QuizAttempt, QuizDetail, QuizQuestion, QuizReview, Resource, Section,
 )
 from .session import RequestFailedError, SceleSession
-from .textutil import clean_html, until, wib
+from .textutil import clean_html, duration, until, wib
 
 _FILE_MODS = {"resource", "folder", "url"}
+_GRADE_METHOD = {1: "highest grade", 2: "average grade", 3: "first attempt", 4: "last attempt"}
 
 
 # ---------------------------------------------------------------- helpers
@@ -468,6 +470,134 @@ def people(s: SceleSession, course_id: str) -> list[Person]:
         )
         for u in data
     ]
+
+
+def _best_grade(s: SceleSession, quiz_id: int) -> str:
+    try:
+        bg = s.ws("mod_quiz_get_user_best_grade", quizid=quiz_id, userid=s.userid()) or {}
+    except RequestFailedError:
+        return ""
+    return f"{bg.get('grade')}" if bg.get("hasgrade") else ""
+
+
+def _quiz_from_ws(q: dict, best: str = "") -> Quiz:
+    opens, closes = q.get("timeopen") or 0, q.get("timeclose") or 0
+    now = time.time()
+    return Quiz(
+        cmid=str(q.get("coursemodule")),
+        id=str(q.get("id")),
+        name=clean_html(q.get("name")),
+        opens=wib(opens),
+        closes=wib(closes),
+        time_limit=duration(q.get("timelimit")),
+        attempts_allowed=(q.get("attempts") or 0) or None,
+        grade=str(q.get("grade")) if q.get("grade") is not None else "",
+        best_grade=best,
+        is_open=(not opens or opens <= now) and (not closes or now <= closes),
+    )
+
+
+def quizzes(s: SceleSession, course_id: str) -> list[Quiz]:
+    """Return the quizzes in a course with open/close dates and your best grade."""
+    data = s.ws("mod_quiz_get_quizzes_by_courses", courseids=[int(course_id)]) or {}
+    out = []
+    for q in data.get("quizzes") or []:
+        out.append(_quiz_from_ws(q, _best_grade(s, int(q["id"]))))
+    out.sort(key=lambda q: q.closes or "9999")
+    return out
+
+
+def _quiz_attempts(s: SceleSession, quiz_id: int) -> list[QuizAttempt]:
+    data = s.ws("mod_quiz_get_user_attempts", quizid=quiz_id, userid=s.userid(),
+                status="all") or {}
+    return [
+        QuizAttempt(
+            id=str(a.get("id")),
+            number=a.get("attempt") or 0,
+            state=a.get("state") or "",
+            started=wib(a.get("timestart")),
+            finished=wib(a.get("timefinish")),
+            sumgrades=str(a.get("sumgrades")) if a.get("sumgrades") is not None else "",
+        )
+        for a in data.get("attempts") or []
+    ]
+
+
+def quiz(s: SceleSession, cmid: str) -> QuizDetail:
+    """Return one quiz (by cmid): settings, access rules, and your attempts."""
+    cm = _course_module(s, cmid)
+    quiz_id = int(cm.get("instance"))
+    course_id = int(cm.get("course"))
+    meta = {}
+    data = s.ws("mod_quiz_get_quizzes_by_courses", courseids=[course_id]) or {}
+    for q in data.get("quizzes") or []:
+        if q.get("id") == quiz_id:
+            meta = q
+            break
+    base = _quiz_from_ws(meta or {"id": quiz_id, "coursemodule": cmid},
+                         _best_grade(s, quiz_id))
+    access = s.ws("mod_quiz_get_quiz_access_information", quizid=quiz_id) or {}
+    return QuizDetail(
+        cmid=str(cmid), id=str(quiz_id), name=base.name or cm.get("name") or "",
+        opens=base.opens, closes=base.closes, time_limit=base.time_limit,
+        attempts_allowed=base.attempts_allowed, grade=base.grade,
+        grade_method=_GRADE_METHOD.get(meta.get("grademethod"), ""),
+        best_grade=base.best_grade,
+        can_attempt=bool(access.get("canattempt")),
+        prevented_reasons=list(access.get("preventaccessreasons") or []),
+        access_rules=list(access.get("accessrules") or []),
+        intro=clean_html(meta.get("intro"), 1500),
+        attempts=_quiz_attempts(s, quiz_id),
+    )
+
+
+_ANSWER_INPUT = re.compile(
+    r'<input[^>]*name="[^"]*answer[^"]*"[^>]*\svalue="([^"]*)"[^>]*>', re.I)
+_CHECKED = re.compile(
+    r'<input[^>]*\bchecked\b[^>]*>(?:\s*<[^>]+>)*\s*([^<]{1,120})', re.I)
+
+
+def _submitted_answer(html: str) -> str:
+    if not html:
+        return ""
+    vals = [v.strip() for v in _ANSWER_INPUT.findall(html) if v.strip()]
+    if not vals:
+        vals = [clean_html(v).strip() for v in _CHECKED.findall(html)]
+        vals = [v for v in vals if v]
+    return ", ".join(dict.fromkeys(vals))
+
+
+def quiz_review(s: SceleSession, attempt_id: str) -> QuizReview:
+    """Return the per-question review of one finished quiz attempt."""
+    data = s.ws("mod_quiz_get_attempt_review", attemptid=int(attempt_id)) or {}
+    att = data.get("attempt") or {}
+    questions = []
+    for q in data.get("questions") or []:
+        html = q.get("html") or ""
+        given = _submitted_answer(html)
+        text = clean_html(html, 1100)
+        if given:
+            text = f"{text}\nYour answer: {given}"
+        questions.append(QuizQuestion(
+            number=q.get("number") or q.get("slot") or 0,
+            slot=q.get("slot") or 0,
+            type=q.get("type") or "",
+            status=q.get("status") or q.get("state") or "",
+            mark=str(q.get("mark")) if q.get("mark") not in (None, "") else "",
+            max_mark=str(q.get("maxmark")) if q.get("maxmark") is not None else "",
+            flagged=bool(q.get("flagged")),
+            text=text,
+        ))
+    return QuizReview(
+        attempt_id=str(attempt_id),
+        quiz_id=str(att.get("quiz") or ""),
+        state=att.get("state") or "",
+        grade=str(data.get("grade")) if data.get("grade") is not None else "",
+        sumgrades=str(att.get("sumgrades")) if att.get("sumgrades") is not None else "",
+        started=wib(att.get("timestart")),
+        finished=wib(att.get("timefinish")),
+        questions=questions,
+    )
 
 
 def course_updates(s: SceleSession, course_id: str, since_days: int = 7) -> dict:

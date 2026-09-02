@@ -287,6 +287,33 @@ def submit(ctx, ref, text, file_path, draft, yes):
 @main.command()
 @click.argument("course_id")
 @click.pass_context
+def quizzes(ctx, course_id):
+    """List quizzes in a course with open/close dates and your best grade."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.quizzes(s, course_id)))
+
+
+@main.command()
+@click.argument("cmid")
+@click.pass_context
+def quiz(ctx, cmid):
+    """Show a quiz's settings, access rules and your attempts (by cmid)."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.quiz(s, cmid)))
+
+
+@main.command("quiz-review")
+@click.argument("attempt_id")
+@click.pass_context
+def quiz_review(ctx, attempt_id):
+    """Show the per-question review of a finished quiz attempt."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.quiz_review(s, attempt_id)))
+
+
+@main.command()
+@click.argument("course_id")
+@click.pass_context
 def resources(ctx, course_id):
     """List downloadable file/folder resources in a course."""
     s = _session(ctx)

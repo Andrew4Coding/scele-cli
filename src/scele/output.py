@@ -17,12 +17,12 @@ import click
 from .models import (
     Activity, Announcement, AssignmentInfo, AssignmentStatus, CalendarEvent, Category,
     Course, CourseDetail, Deadline, Discussion, Grade, Notification, Person, Post,
-    Resource, Section,
+    Quiz, QuizAttempt, QuizDetail, QuizQuestion, QuizReview, Resource, Section,
 )
 
 _FLAT_MODELS = (
     Course, Category, Discussion, Activity, Resource, Person, Deadline,
-    CalendarEvent, Notification, Grade, AssignmentInfo,
+    CalendarEvent, Notification, Grade, AssignmentInfo, Quiz, QuizAttempt, QuizQuestion,
 )
 
 try:  # optional dependency
@@ -289,6 +289,25 @@ def _assignment(a: AssignmentStatus) -> None:
                        + click.style(f.get("url", ""), dim=True))
 
 
+def _quiz_review(r: QuizReview) -> None:
+    _echo(click.style(f"Attempt {r.attempt_id}  ({r.state})", bold=True, fg="cyan"))
+    head = {k: v for k, v in (("grade", r.grade), ("sumgrades", r.sumgrades),
+                              ("started", r.started), ("finished", r.finished)) if v}
+    if head:
+        _kv(head)
+    _echo()
+    for q in r.questions:
+        flag = " ⚑" if q.flagged else ""
+        mark = f"{q.mark}/{q.max_mark}" if q.mark or q.max_mark else ""
+        _echo(click.style(f"Q{q.number}. [{q.type}] {q.status} {mark}{flag}".rstrip(), bold=True))
+        for line in (q.text or "").splitlines():
+            if line.strip():
+                _echo("   " + line)
+        _echo()
+    if not r.questions:
+        _echo(click.style("(no questions in this review)", dim=True))
+
+
 def _render(obj) -> None:
     if isinstance(obj, list) and obj and all(isinstance(x, Section) for x in obj):
         _sections(obj)
@@ -298,6 +317,16 @@ def _render(obj) -> None:
         _announcements(obj)
     elif isinstance(obj, AssignmentStatus):
         _assignment(obj)
+    elif isinstance(obj, QuizReview):
+        _quiz_review(obj)
+    elif isinstance(obj, QuizDetail):
+        d = _plain(obj)
+        attempts = d.pop("attempts", [])
+        _kv(d)
+        if attempts:
+            _echo()
+            _echo(click.style("attempts:", bold=True))
+            _table(attempts, indent=2)
     elif isinstance(obj, (CourseDetail, AssignmentInfo)):
         _kv(_plain(obj))
     elif isinstance(obj, list) and obj and all(isinstance(x, _FLAT_MODELS) for x in obj):

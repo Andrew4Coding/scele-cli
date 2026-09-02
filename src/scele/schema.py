@@ -31,6 +31,9 @@ RETURNS: dict[str, str] = {
     "assignment": "AssignmentStatus",
     "assignment-detail": "AssignmentInfo",
     "submit": "ActionResult & {stage: string, warnings: object[]}",
+    "quizzes": "Quiz[]",
+    "quiz": "QuizDetail",
+    "quiz-review": "QuizReview",
     "resources": "Resource[]",
     "announcements": "Announcement[]",
     "enrol": "ActionResult",
@@ -70,6 +73,9 @@ EXAMPLES: dict[str, str] = {
     "assignment": "scele assignment 222043",
     "assignment-detail": "scele assignment-detail 222043",
     "submit": "scele submit 55010 --text 'my answer' --yes",
+    "quizzes": "scele quizzes 3930",
+    "quiz": "scele quiz 189006",
+    "quiz-review": "scele quiz-review 459484",
     "resources": "scele resources 4234",
     "announcements": "scele announcements",
     "enrol": "scele enrol 4128 --key secret",
@@ -113,6 +119,10 @@ def _models() -> dict[str, dict]:
             out[key]["attachments"] = "{filename: string, filesize: integer, fileurl: string}[]"
     if "CourseDetail" in out:
         out["CourseDetail"]["teachers"] = "{name: string, roles: string[]}[]"
+    if "QuizDetail" in out:
+        out["QuizDetail"]["attempts"] = "QuizAttempt[]"
+    if "QuizReview" in out:
+        out["QuizReview"]["questions"] = "QuizQuestion[]"
     out["ActionResult"] = {"ok": "boolean", "action": "string", "...": "command-specific fields"}
     return out
 
@@ -172,6 +182,8 @@ def build(group) -> dict:
             "discussion id (d)": "from `scele forum <id>` -> `scele thread <d>`",
             "post id": "from `scele thread <d>` -> `scele reply <post>`",
             "assignment ref": "instance id or cmid from `scele assignments <course>`",
+            "quiz cmid": "from `scele quizzes <course>` / `scele course <course>` -> `scele quiz <cmid>`",
+            "quiz attempt id": "from `scele quiz <cmid>` -> `scele quiz-review <attempt>`",
         },
         "commands": commands,
         "models": _models(),

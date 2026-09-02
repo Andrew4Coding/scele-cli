@@ -215,3 +215,85 @@ class Notification:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+
+@dataclass
+class Quiz:
+    cmid: str
+    id: str
+    name: str
+    opens: str = ""
+    closes: str = ""
+    time_limit: str = ""
+    attempts_allowed: int | None = None
+    grade: str = ""
+    best_grade: str = ""
+    is_open: bool = False
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class QuizAttempt:
+    id: str
+    number: int
+    state: str = ""
+    started: str = ""
+    finished: str = ""
+    sumgrades: str = ""
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class QuizDetail:
+    cmid: str
+    id: str
+    name: str
+    opens: str = ""
+    closes: str = ""
+    time_limit: str = ""
+    attempts_allowed: int | None = None
+    grade: str = ""
+    grade_method: str = ""
+    best_grade: str = ""
+    can_attempt: bool = False
+    prevented_reasons: list[str] = field(default_factory=list)
+    access_rules: list[str] = field(default_factory=list)
+    intro: str = ""
+    attempts: list[QuizAttempt] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {**asdict(self), "attempts": [a.to_dict() for a in self.attempts]}
+
+
+@dataclass
+class QuizQuestion:
+    number: int
+    slot: int
+    type: str = ""
+    status: str = ""
+    mark: str = ""
+    max_mark: str = ""
+    flagged: bool = False
+    text: str = ""
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class QuizReview:
+    attempt_id: str
+    quiz_id: str
+    state: str = ""
+    grade: str = ""
+    sumgrades: str = ""
+    started: str = ""
+    finished: str = ""
+    questions: list[QuizQuestion] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {**asdict(self), "questions": [q.to_dict() for q in self.questions]}

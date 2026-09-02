@@ -73,7 +73,8 @@ scele thread <d>               -> posts (with parent + depth)
 Read-only: `courses`, `course-detail <id>`, `people <id>`, `grades <id>`,
 `course-updates <id>`, `deadlines`, `calendar`, `notifications`, `categories [--id N]`,
 `category <id>`, `course <id>`, `forums <id>`, `forum <id> [--limit N]`, `thread <d>`,
-`assignments <id>`, `assignment <cmid>`, `assignment-detail <ref>`, `resources <id>`,
+`assignments <id>`, `assignment <cmid>`, `assignment-detail <ref>`,
+`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `resources <id>`,
 `announcements`, `schema`, `whoami`.
 
 Writes — confirm with the user first; `post`/`reply`/`submit` also need `--yes`:
@@ -106,6 +107,7 @@ scele -c thread 62493 | jq -r '.[] | "\(.depth * "  ")\(.author): \(.body)"'
 
 - Dates render as `YYYY-MM-DD HH:MM WIB`; HTML bodies are flattened to plain text.
 - `thread` posts carry `parent` and `depth` (0 = discussion starter) — reply to the exact post.
+- Quiz commands are read-only — the CLI never starts or submits a graded attempt.
 - A `news` forum with no posts legitimately returns `[]`.
 - `forum` / `announcements` accept `--limit`; `thread` returns the whole thread.
 - Never pass credentials on the command line; use the prompt or the env vars.

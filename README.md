@@ -117,6 +117,10 @@ scele submit 55010 --text "my answer" --yes
 scele submit 55010 --file ./hw.pdf --yes
 scele submit 55010 --text "wip" --draft --yes
 
+scele quizzes 3930                # quizzes + open/close + your best grade
+scele quiz 188689                # settings, access rules, your attempts (by cmid)
+scele quiz-review 459484         # per-question review of a finished attempt
+
 scele resources 4234              # downloadable files (with fileurl)
 scele download "<pluginfile-url>" -o ./dl
 scele download 222038 -o ./dl     # by resource cmid

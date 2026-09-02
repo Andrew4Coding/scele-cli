@@ -33,6 +33,9 @@ The token is minted once: `POST /login/token.php` with `username`, `password`,
 | `assignment` | `core_course_get_course_module` + `mod_assign_get_submission_status` |
 | `submit --text` | `mod_assign_save_submission` (+ `mod_assign_submit_for_grading`) |
 | `submit --file` | `core_files_get_unused_draft_itemid` + `POST /webservice/upload.php` + `mod_assign_save_submission` (+ `mod_assign_submit_for_grading`) |
+| `quizzes` | `mod_quiz_get_quizzes_by_courses` + `mod_quiz_get_user_best_grade` |
+| `quiz` | `core_course_get_course_module` + `mod_quiz_get_quizzes_by_courses` + `mod_quiz_get_quiz_access_information` + `mod_quiz_get_user_attempts` |
+| `quiz-review` | `mod_quiz_get_attempt_review` |
 | `resources` | `core_course_get_contents` (modules `resource` / `folder` / `url`) |
 | `announcements` | `mod_forum_get_forums_by_courses` (course 1, type `news`) + `mod_forum_get_forum_discussions` |
 | `enrol` | `enrol_self_enrol_user` |
@@ -50,6 +53,14 @@ The token is minted once: `POST /login/token.php` with `username`, `password`,
 - **discussion id (d)** — from `forum <id>` → `thread <d>`.
 - **post id** — from `thread <d>` → `reply <post>`.
 - **assignment ref** — instance id *or* cmid from `assignments <course>`; `assignment` takes the cmid.
+- **quiz cmid** — from `quizzes <course>` / `course <course>` → `quiz <cmid>`.
+- **quiz attempt id** — from `quiz <cmid>` → `quiz-review <attempt>`.
+
+## Not implemented (deliberately)
+
+`mod_quiz_start_attempt` / `save_attempt` / `process_attempt` — taking or submitting a
+graded quiz attempt through the API is irreversible and affects real grades, so the CLI
+only *reads* quizzes.
 
 ## Notes
 

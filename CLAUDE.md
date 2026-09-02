@@ -26,6 +26,13 @@ a dependency of this CLI.
     failure → `login_failed` and the existing cookie file is left untouched.
   - `models.py` — dataclasses with `to_dict()`.
   - `output.py` — `emit` (one JSON doc to stdout), `fail` (JSON error to stderr, exit 1).
+  - `watch.py` — background watches: re-run any `scele` subcommand on an interval, diff its
+    canonical JSON output (git-style unified diff, `sesskey` stripped), log events to
+    `~/.config/scele/watches/<name>/events.jsonl`, POST changes to configured webhooks.
+    POSIX-only detach (`subprocess` + `start_new_session`, PID in `daemon.pid`); no
+    reboot persistence. A watch exists only while running: when its loop ends it deletes
+    its own directory, and `watch ls` prunes any watch whose process is gone. CLI surface
+    is the `watch` group in `cli.py` (`ls`, `run`, `rm`, `clear`, `rename`, `logs`).
   - `config.py` — cookie store. `~/.config/scele/` (or `$XDG_CONFIG_HOME`) on Unix,
     `%APPDATA%\scele\` on Windows; override with `SCELE_CONFIG_DIR`. Base URL: `SCELE_BASE_URL`.
 - `__version__` in `src/scele/__init__.py` is the **single version source**; `pyproject.toml`
@@ -53,9 +60,11 @@ a dependency of this CLI.
 
 ## Output contract (do not break)
 
-- Every command prints **exactly one JSON document to stdout** via `output.emit`.
+- Every command prints **exactly one JSON document to stdout** via `output.emit`. The sole
+  exception: a **foreground** `scele watch <cmd>` streams newline-delimited JSON events
+  (one `WatchEvent` doc per line). `watch ls/run/rm/rename/logs` stay single-document.
 - Errors go to **stderr** as `{"ok": false, "error": <code>, "message": ...}` via `output.fail`, exit 1.
-  Codes: `not_authenticated`, `login_failed`, `request_failed`.
+  Codes: `not_authenticated`, `login_failed`, `request_failed`, `watch_not_found`.
 - No human/table mode. Never `print`/`click.echo` prose to stdout; prompts and notices go to stderr.
 - `-c/--compact` is a group-level flag for single-line JSON.
 

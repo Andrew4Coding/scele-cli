@@ -9,9 +9,17 @@ description: Constraints, boundaries, and evolution rules
 ## Output contract (non-negotiable)
 
 - **stdout** must contain exactly one logical JSON document per run.
+  - **Sole exception**: a *foreground* `scele watch <cmd>` streams newline-delimited JSON
+    events (one `WatchEvent` per line). `watch ls/run/rm/clear/rename/logs` remain single-document.
+- Watches are ephemeral: a watch exists only while its process runs. When the loop ends it
+  deletes its own directory; `watch ls` prunes any watch whose process is gone; `watch clear`
+  stops and deletes every watch.
 - **stderr** is for errors only: `{"ok": false, "error": "<code>", "message": "<text>"}`.
+  - Error codes: `not_authenticated`, `login_failed`, `request_failed`, `watch_not_found`.
 - **Exit codes**: `0` = success, `1` = any error. No other exit codes.
 - Never mix human-readable text into stdout when piped. The `output.py` module handles TTY detection.
+- Watch webhook POSTs are outbound network side-effects — configured explicitly by the user
+  via `--webhook`; delivery successes/failures are logged as `webhook` events, never to stdout.
 
 ## Schema-driven design
 

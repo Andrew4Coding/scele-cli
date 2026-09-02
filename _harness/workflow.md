@@ -22,6 +22,25 @@ description: Execution flows and procedures
 
 **Confirmation needed**: Only if the command modifies state (writes). Read-only commands can proceed without confirmation.
 
+## 1b. Modify the `watch` command
+
+**Trigger**: User asks to change background-watch behavior (diffing, webhooks, daemon, subcommands).
+
+**Steps**:
+1. Core logic (canonicalize / unified diff / event log / webhook delivery / daemon
+   spawn+liveness+stop) lives in `src/scele/watch.py` — no parser or model changes needed;
+   `watch` reuses existing commands via a child `scele -c <cmd>` process.
+2. CLI surface is the `watch` group in `src/scele/cli.py` (`_WatchGroup` makes
+   `watch <cmd>` an alias for `watch start <cmd>`): `ls`, `run`, `rm`, `clear`, `rename`, `logs`.
+   Watches are ephemeral — stopping one deletes it; `ls` prunes dead ones.
+3. Update `RETURNS["watch"]` / `EXAMPLES["watch"]` in `src/scele/schema.py` if the
+   surface changed (`test_schema_manifest` enforces non-empty entries).
+4. Tests: `tests/test_watch.py` (stub `watch.run_command`; never hits the network).
+5. Sync docs: `CLAUDE.md` output-contract note, `AGENTS.md.bak`, `skills/scele/SKILL.md`.
+6. Run `make test`. Micro-commit each step.
+
+**Confirmation needed**: No (read-only unless it changes webhook/daemon side-effects).
+
 ## 2. Fix a parser bug
 
 **Trigger**: A command returns wrong/missing data.

@@ -20,6 +20,7 @@ def _default_config_dir() -> Path:
 CONFIG_DIR = Path(os.environ["SCELE_CONFIG_DIR"]) if os.environ.get("SCELE_CONFIG_DIR") \
     else _default_config_dir()
 COOKIES_PATH = CONFIG_DIR / "cookies.json"
+WATCHES_DIR = CONFIG_DIR / "watches"
 
 
 def base_url() -> str:
@@ -53,3 +54,9 @@ def load_cookies() -> list[dict]:
 def clear_cookies() -> None:
     """Delete the stored cookie file."""
     COOKIES_PATH.unlink(missing_ok=True)
+
+
+def watches_dir() -> Path:
+    """Return the directory holding background watch state, creating it if missing."""
+    WATCHES_DIR.mkdir(parents=True, exist_ok=True)
+    return WATCHES_DIR

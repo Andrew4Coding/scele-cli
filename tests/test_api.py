@@ -1,0 +1,148 @@
+"""api.py maps Moodle web-service payloads onto the CLI's dataclasses.
+
+A FakeSession returns canned JSON per wsfunction — no network, no token.
+"""
+
+
+from scele import api
+from scele.models import (
+    AssignmentStatus, CalendarEvent, Deadline, Grade, Notification, Person, Post,
+)
+
+
+class FakeSession:
+    base = "https://scele.example"
+    token = "T"
+
+    def __init__(self, responses: dict):
+        self.responses = responses
+        self.calls = []
+
+    def ws(self, wsfunction, **params):
+        self.calls.append((wsfunction, params))
+        if wsfunction not in self.responses:
+            raise AssertionError(f"unexpected ws call: {wsfunction}")
+        val = self.responses[wsfunction]
+        return val(params) if callable(val) else val
+
+    def userid(self):
+        return 8830
+
+    def pluginfile_url(self, url):
+        return url + "?token=T"
+
+
+def test_my_courses_sorts_and_maps():
+    s = FakeSession({
+        "core_enrol_get_users_courses": [
+            {"id": 2, "shortname": "DDP2", "fullname": "Dasar Pemrograman 2", "progress": 40.2},
+            {"id": 1, "shortname": "ALG", "fullname": "Algoritma", "hidden": True},
+            {"id": 3, "shortname": "ANP", "fullname": "Analisis Numerik", "progress": None},
+        ],
+    })
+    out = api.my_courses(s)
+    assert [c.shortname for c in out] == ["ANP", "DDP2"]  # hidden dropped, sorted
+    assert out[1].progress == 40.2
+    assert out[1].url == "https://scele.example/course/view.php?id=2"
+
+
+def test_thread_builds_parent_and_depth():
+    s = FakeSession({
+        "mod_forum_get_discussion_posts": {"posts": [
+            {"id": 1, "parentid": 0, "subject": "D05", "message": "<p>root</p>",
+             "timecreated": 0, "author": {"fullname": "Aimee"}},
+            {"id": 2, "parentid": 1, "subject": "Re: D05", "message": "hi",
+             "timecreated": 0, "author": {"fullname": "Naya"}},
+            {"id": 3, "parentid": 2, "subject": "Re: D05", "message": "yo",
+             "timecreated": 0, "author": {"fullname": "Marco"}},
+        ]},
+    })
+    posts = api.thread(s, "62561")
+    assert [p.depth for p in posts] == [0, 1, 2]
+    assert posts[2].parent == "2"
+    assert posts[0].body == "root"
+    assert all(isinstance(p, Post) for p in posts)
+
+
+def test_assignment_status_summarizes_submission():
+    s = FakeSession({
+        "core_course_get_course_module": {"cm": {"id": 55010, "instance": 900,
+                                                 "course": 4234, "name": "HW1"}},
+        "mod_assign_get_submission_status": {"lastattempt": {
+            "gradingstatus": "graded",
+            "submission": {"status": "submitted", "attemptnumber": 0,
+                           "timemodified": 0, "plugins": [
+                               {"type": "file", "fileareas": [{"files": [
+                                   {"filename": "a.pdf", "fileurl": "https://x/a.pdf"}]}]},
+                           ]},
+        }},
+    })
+    st = api.assignment(s, "55010")
+    assert isinstance(st, AssignmentStatus)
+    assert st.name == "HW1"
+    assert st.fields["Submission status"] == "SUBMITTED"
+    assert st.fields["Grading status"] == "graded"
+    assert st.files == [{"name": "a.pdf", "url": "https://x/a.pdf"}]
+
+
+def test_grades_maps_items():
+    s = FakeSession({
+        "gradereport_user_get_grade_items": {"usergrades": [{"gradeitems": [
+            {"itemname": "Quiz 1", "itemtype": "mod", "gradeformatted": "88.00",
+             "grademin": 0, "grademax": 100, "percentageformatted": "88.00 %",
+             "feedback": "<p>nice</p>", "gradedategraded": 0},
+        ]}]},
+    })
+    out = api.grades(s, "4234")
+    assert out == [Grade(item="Quiz 1", type="mod", grade="88.00", range="0–100",
+                         percentage="88.00 %", feedback="nice",
+                         graded=out[0].graded)]
+
+
+def test_deadlines_and_calendar_and_notifications_shapes():
+    s = FakeSession({
+        "core_calendar_get_action_events_by_timesort": {"events": [
+            {"name": "HW due", "timesort": 4102444800, "url": "https://x",
+             "course": {"shortname": "DDP2", "id": 2},
+             "normalisedeventtypetext": "Assignment"},
+        ]},
+        "core_calendar_get_calendar_events": {"events": [
+            {"id": 7, "name": "Lecture", "timestart": 4102444800, "eventtype": "course",
+             "course": {"id": 2}, "description": "<p>room A</p>"},
+        ]},
+        "core_message_get_notifications": {"notifications": [
+            {"id": 5, "subject": "Graded", "from": {"fullname": "Grader"},
+             "timecreated": 0, "fullmessagehtml": "<p>done</p>", "read": True},
+        ]},
+    })
+    assert isinstance(api.deadlines(s)[0], Deadline)
+    assert api.deadlines(s)[0].course == "DDP2"
+    assert isinstance(api.calendar(s)[0], CalendarEvent)
+    assert api.calendar(s)[0].description == "room A"
+    n = api.notifications(s)[0]
+    assert isinstance(n, Notification) and n.read is True and n.text == "done"
+
+
+def test_people_maps_roles():
+    s = FakeSession({
+        "core_enrol_get_enrolled_users": [
+            {"id": 1, "fullname": "Dr Yugo", "roles": [{"shortname": "editingteacher"}],
+             "email": "y@x", "groups": [{"name": "A"}]},
+        ],
+    })
+    p = api.people(s, "4234")[0]
+    assert isinstance(p, Person)
+    assert p.roles == ["editingteacher"] and p.groups == ["A"]
+
+
+def test_forum_reply_passes_subject_when_given():
+    s = FakeSession({"mod_forum_add_discussion_post": {"post": {"discussionid": 99}}})
+    url = api.forum_reply(s, "553917", "thanks", subject="Custom")
+    assert url == "https://scele.example/mod/forum/discuss.php?d=99"
+    assert s.calls[0][1]["subject"] == "Custom"
+
+
+def test_forum_reply_omits_subject_by_default():
+    s = FakeSession({"mod_forum_add_discussion_post": {"post": {}}})
+    api.forum_reply(s, "553917", "thanks")
+    assert "subject" not in s.calls[0][1]

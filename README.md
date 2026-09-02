@@ -27,10 +27,15 @@ curl -fsSL https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/instal
 irm https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.ps1 | iex
 ```
 
-Fetches the latest release binary for your OS/arch, verifies its SHA-256, and drops `scele`
-on your `PATH`. Pin a version with `SCELE_VERSION=v0.2.0`, change the location with
-`SCELE_BIN_DIR`. Or grab `scele-<os>-<arch>` straight from the
-[Releases page](https://github.com/Andrew4Coding/scele-cli/releases) and `chmod +x` it.
+Fetches the latest release bundle (`scele-<os>-<arch>.tar.gz`) for your OS/arch, verifies
+its SHA-256, unpacks it to `~/.local/lib/scele-app`, and links `scele` onto your `PATH`.
+Pin a version with `SCELE_VERSION=v0.2.0`; change locations with `SCELE_BIN_DIR` /
+`SCELE_APP_DIR`. Or download the archive from the
+[Releases page](https://github.com/Andrew4Coding/scele-cli/releases), unpack it, and run
+`scele/scele`.
+
+> The bundle is a directory, not a single file (it starts ~40× faster than a onefile
+> binary). No prebuilt bundle for your platform? Use pipx below.
 
 Then open a new terminal:
 

@@ -47,7 +47,8 @@ class _WatchGroup(click.Group):
     context_settings={"help_option_names": ["-h", "--help"]},
     epilog="Output format defaults to a table on a terminal, plain JSON when piped. "
            "Use `-f json`, `-f yaml`, or `-f table` to override. "
-           "Run `scele schema` for a machine-readable manifest.",
+           "Run `scele schema` for a machine-readable manifest. "
+           "Run `scele skill` to install the AI agent skill.",
 )
 @click.version_option(__version__, prog_name="scele", message="%(version)s")
 @click.option("-c", "--compact", is_flag=True, help="Single-line JSON (implies -f json).")
@@ -67,6 +68,55 @@ def schema(ctx):
     """Print a machine-readable manifest of all commands and I/O shapes."""
     from .schema import build
     emit(build(main), fmt="json", compact=ctx.obj["compact"])
+
+
+@main.command()
+@click.option("-p", "--project", is_flag=True, help="Install to repository scope (.claude/skills/scele/).")
+@click.option("--dir", "custom_dir", type=click.Path(), help="Install to a custom directory (<path>/scele/).")
+@click.option("--uninstall", is_flag=True, help="Remove the installed skill.")
+@click.pass_context
+def skill(ctx, project, custom_dir, uninstall):
+    """Install or manage the scele agent skill for Claude Code and AI agents."""
+    import shutil
+
+    if custom_dir:
+        dest = Path(custom_dir).resolve() / "scele"
+        scope = "custom"
+    elif project:
+        dest = Path.cwd() / ".claude" / "skills" / "scele"
+        scope = "project"
+    else:
+        dest = Path.home() / ".claude" / "skills" / "scele"
+        scope = "user"
+
+    if uninstall:
+        if dest.exists():
+            shutil.rmtree(dest)
+        _out(ctx, {"ok": True, "action": "uninstall", "path": str(dest), "scope": scope})
+        return
+
+    # Find SKILL.md
+    pkg_root = Path(__file__).resolve().parents[2]
+    skill_src = pkg_root / "skills" / "scele"
+    if not (skill_src / "SKILL.md").exists():
+        skill_src = Path(__file__).resolve().parent / "skills" / "scele"
+
+    if (skill_src / "SKILL.md").exists():
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(skill_src, dest)
+    else:
+        dest.mkdir(parents=True, exist_ok=True)
+        import requests
+        url = "https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/skills/scele/SKILL.md"
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            (dest / "SKILL.md").write_text(resp.text, encoding="utf-8")
+        else:
+            fail(f"Could not locate skill source (HTTP {resp.status_code})", code="request_failed")
+
+    _out(ctx, {"ok": True, "action": "install", "path": str(dest), "scope": scope})
 
 
 @main.command()

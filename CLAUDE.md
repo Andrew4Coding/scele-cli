@@ -5,36 +5,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 `scele` — a command-line client for **SCELE** (`https://scele.cs.ui.ac.id/`), the Moodle instance of
-Fakultas Ilmu Komputer, Universitas Indonesia. It logs in over HTTP with a username/password, stores
-the session cookie, and scrapes Moodle pages into JSON.
+Fakultas Ilmu Komputer, Universitas Indonesia. It authenticates with a username/password to mint a
+**Moodle mobile web-service token** (`/login/token.php`, `service=moodle_mobile_app`), stores only
+that token, and drives SCELE through the official web-service API
+(`/webservice/rest/server.php`). No HTML scraping, no session cookie, no `sesskey`.
 
-The page-capture tooling used to reverse-engineer SCELE's HTML lives in the sibling repo
-`../scele_cli_recorder/` (Playwright recorder + HTML cleaner + `moodle_capture/` fixtures). It is not
-a dependency of this CLI.
+The `../scele_cli_recorder/` sibling repo (Playwright recorder + `moodle_capture/` fixtures) was used
+for the old scraping implementation and is no longer a dependency of anything here.
 
 ## Layout
 
 - `src/scele/` — the package (`scele` entry point):
   - `cli.py` — click command surface. `_guard()` wraps every API call so any exception becomes a JSON
     error. `_out()` prints via `output.emit`.
-  - `api.py` — one function per command; takes a `SceleSession`.
-  - `session.py` — authed `requests.Session`; `get()` raises `NotAuthenticatedError` on a login redirect.
-  - `parsers.py` — one BeautifulSoup parser per Moodle page type. Defensive: missing nodes → "".
-  - `auth.py` — `terminal_login`: GET `/login/index.php` for the `logintoken` hidden field, POST
-    username+password, verify with GET `/my/`. Reads creds from prompt (password hidden) or
-    `SCELE_USERNAME`/`SCELE_PASSWORD`. Password never written to disk; only saved on verified success;
-    failure → `login_failed` and the existing cookie file is left untouched.
+  - `api.py` — one function per command; takes a `SceleSession`, calls one or more web-service
+    functions, maps the JSON onto dataclasses in `models.py`.
+  - `session.py` — `SceleSession`: holds the token + base URL. `ws(wsfunction, **params)` POSTs to
+    `/webservice/rest/server.php`, flattens nested params to Moodle's `key[0][sub]` form, and turns
+    Moodle `exception` payloads into `RequestFailedError` (or `NotAuthenticatedError` for the
+    token-expiry family). `site_info()`, `userid()`, `is_authenticated()`, `pluginfile_url()`.
+  - `auth.py` — `terminal_login`: POST username+password to `/login/token.php`, verify the token with
+    `core_webservice_get_site_info`, then save it. Reads creds from prompt (password hidden) or
+    `SCELE_USERNAME`/`SCELE_PASSWORD`. **The password is never written to disk**; only the verified
+    token is saved; a failed login leaves any existing `token.json` untouched (`login_failed`).
+  - `textutil.py` — `clean_html` (Moodle HTML → plain text), `wib`/`until` (epoch → WIB strings /
+    countdowns). Used everywhere `api.py` shapes a web-service payload.
   - `models.py` — dataclasses with `to_dict()`.
-  - `output.py` — `emit` (one JSON doc to stdout), `fail` (JSON error to stderr, exit 1).
+  - `output.py` — `emit` (one document to stdout: table on a TTY, JSON when piped), `fail` (JSON
+    error to stderr, exit 1).
   - `watch.py` — background watches: re-run any `scele` subcommand on an interval, diff its
-    canonical JSON output (git-style unified diff, `sesskey` stripped), log events to
+    canonical JSON output (git-style unified diff, volatile keys like `token` stripped), log events to
     `~/.config/scele/watches/<name>/events.jsonl`, POST changes to configured webhooks.
     POSIX-only detach (`subprocess` + `start_new_session`, PID in `daemon.pid`); no
     reboot persistence. A watch exists only while running: when its loop ends it deletes
     its own directory, and `watch ls` prunes any watch whose process is gone. CLI surface
     is the `watch` group in `cli.py` (`ls`, `run`, `rm`, `clear`, `rename`, `logs`).
-  - `config.py` — cookie store. `~/.config/scele/` (or `$XDG_CONFIG_HOME`) on Unix,
+  - `config.py` — token store. `~/.config/scele/token.json` (or `$XDG_CONFIG_HOME`) on Unix,
     `%APPDATA%\scele\` on Windows; override with `SCELE_CONFIG_DIR`. Base URL: `SCELE_BASE_URL`.
+    WS short name: `SCELE_WS_SERVICE` (default `moodle_mobile_app`).
 - `__version__` in `src/scele/__init__.py` is the **single version source**; `pyproject.toml`
   reads it via `[tool.hatch.version]`. Bump it only through `scripts/release.sh <version>`.
 - Install paths:
@@ -47,16 +55,13 @@ a dependency of this CLI.
   - `.github/workflows/release.yml` — on `v*` tag: build binaries on 5 runners + sdist/wheel,
     publish a GitHub Release with `checksums.txt`. `ci.yml` runs pytest on push/PR.
   - `RELEASING.md` is the operator guide.
-- `skills/scele/SKILL.md` — the Agent Skill (condensed `AGENTS.md` in skill format). Installs via
-  `npx skills add Andrew4Coding/scele-cli` (the vercel-labs `skills` CLI discovers it at
-  `skills/*/SKILL.md`), or `npx scele-skill` (`bin/install-skill.mjs`, zero deps, `--with-cli` also
-  runs the CLI installer). Keep SKILL.md, `AGENTS.md`, and `schema.py` in sync when commands change.
-  `SKILLS.md` documents all install methods.
+- `skills/scele/SKILL.md` — the Agent Skill. Installs via `npx skills add Andrew4Coding/scele-cli`
+  or `npx scele-skill` (`bin/install-skill.mjs`). Keep SKILL.md, `AGENTS.md.bak`, and `schema.py` in
+  sync when commands change. `SKILLS.md` documents all install methods.
   - `schema.py` — builds the `scele schema` manifest by introspecting the click group + dataclasses.
-- `ENDPOINTS.md` — Moodle endpoint map + per-page component structure (derived from the recorder's captures).
-- `AGENTS.md` — how to drive `scele` programmatically. Keep in sync with the CLI.
-- `tests/test_parsers.py` — runs parsers against real captures at
-  `../scele_cli_recorder/moodle_capture/` (or `$SCELE_FIXTURES`); fixture-dependent tests skip if absent.
+- `ENDPOINTS.md` — the web-service functions each command calls.
+- `tests/test_api.py` — `api.py` mapping logic against canned web-service payloads (no network).
+  `tests/test_schema.py` — the `scele schema` manifest stays complete.
 
 ## Output contract (do not break)
 
@@ -65,7 +70,7 @@ a dependency of this CLI.
   (one `WatchEvent` doc per line). `watch ls/run/rm/rename/logs` stay single-document.
 - Errors go to **stderr** as `{"ok": false, "error": <code>, "message": ...}` via `output.fail`, exit 1.
   Codes: `not_authenticated`, `login_failed`, `request_failed`, `watch_not_found`.
-- No human/table mode. Never `print`/`click.echo` prose to stdout; prompts and notices go to stderr.
+- Prompts and notices go to stderr, never stdout.
 - `-c/--compact` is a group-level flag for single-line JSON.
 
 ## Working on the CLI
@@ -77,16 +82,20 @@ make binary         # scripts/build-binary.sh -> dist/scele
 ./install.sh -e     # pipx editable install (puts `scele` on PATH)
 ```
 
-- Parser selectors target Moodle 4.x, theme `classic`. When SCELE's HTML changes: re-capture with
-  `../scele_cli_recorder`, run its `clean_capture.py`, then fix `parsers.py` until `pytest` passes.
-- `parse_my_courses`, `parse_forum`, `parse_discussion`, `parse_announcements` were tuned against a
-  live session; `pytest` only covers the older capture markup for them.
-- State-changing ops (`enrol`, `post`, `reply`, `subscribe`) need `sesskey` + form hidden fields;
-  `api._hidden()` scrapes them from the GET form first. `post`/`reply` require `--yes` or a TTY prompt.
+- Runtime deps are just `requests` + `click`. `beautifulsoup4`/`lxml` are gone.
+- Each `api.py` function is one-or-more `s.ws("<wsfunction>", ...)` calls plus a map to a dataclass.
+  When adding one, list the web-service function(s) in `ENDPOINTS.md`.
+- Nested WS params are passed as plain dict/list; `session._flatten` renders `key[0][sub]` for you.
+- Write ops (`enrol`, `post`, `reply`, `subscribe`, `submit`) call state-changing WS functions.
+  `post`/`reply`/`submit` require `--yes` or a TTY prompt.
+- `quiz-start` / `quiz-answer --finish` are irreversible (consume an attempt / submit for
+  grading) and require `--yes`. `quiz-answer` echoes the mechanical `:sequencecheck` hidden
+  fields automatically; the caller supplies the real answer fields (names from `quiz-attempt`).
 - When you add/rename a command, update `RETURNS` and `EXAMPLES` in `schema.py`
-  (`test_schema_manifest` enforces both) and the command list in `AGENTS.md`.
+  (`tests/test_schema.py` enforces both), the command list in `skills/scele/SKILL.md`, and `README.md`.
 
 ## Notes
 
 - Some forums (e.g. "Class Announcements") legitimately return `[]` — they have no discussions.
-- Captured HTML in the recorder repo contains other students' personal data; keep it local.
+- `login` relies on `/login/token.php` accepting a password. This works for manual/LDAP accounts;
+  an account behind an external SSO/CAS/SAML login page cannot mint a token this way.

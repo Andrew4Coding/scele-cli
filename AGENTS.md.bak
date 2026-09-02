@@ -30,7 +30,7 @@ JSON events. `watch ls|run|rm|rename|logs` are single-document like everything e
 ## Auth
 
 ```bash
-scele whoami                     # {"ok":true,"authenticated":true,...} if ready
+scele whoami                     # {"ok":true,"authenticated":true,"user":...} if ready
 scele login                      # prompts for username + password (no browser, no CAPTCHA)
 ```
 
@@ -40,31 +40,38 @@ Non-interactive:
 SCELE_USERNAME=... SCELE_PASSWORD=... scele login
 ```
 
-Wrong credentials → `{"error":"login_failed"}`. If a command returns
-`{"error":"not_authenticated"}`, the session expired — run `scele login` again.
+`login` exchanges the password for a Moodle web-service token (`/login/token.php`); only the
+token is stored (`~/.config/scele/token.json`), never the password. Wrong credentials →
+`{"error":"login_failed"}`. `{"error":"not_authenticated"}` → the token was rejected, run
+`scele login` again. An account behind an external SSO login page cannot mint a token.
 
 ## ID flow (how to get from nothing to a specific thing)
 
 ```
 scele courses                 -> course id            (e.g. 4234)
-scele course 4234             -> activities w/ cmid    (forum/assign/resource module ids)
+scele course 4234             -> activities w/ cmid    (assignment/resource module ids)
+scele forums 4234             -> forum cmid
 scele forum <forum-cmid>      -> discussions w/ id (d)
-scele thread <d>              -> posts w/ id
+scele thread <d>              -> posts w/ id, parent, depth
 ```
 
-- `scele forums|assignments|resources <course-id>` are filtered views of `scele course`.
-- `scele assignment <cmid>` and `scele download <cmid>` take an activity cmid, not a course id.
+- `scele assignment <cmid>` / `scele download <cmid>` take an activity cmid.
+- `scele assignment-detail <ref>` / `scele submit <ref>` take an assignment ref (instance id OR cmid).
 
 ## Commands
 
-Read-only: `courses`, `categories [--id N]`, `category <id>`, `course <id>`, `forums <id>`,
-`forum <id>`, `thread <d>`, `assignments <id>`, `assignment <cmid>`, `resources <id>`,
-`announcements`.
+Read-only: `courses`, `course-detail <id>`, `people <id>`, `grades <id>`,
+`course-updates <id>`, `deadlines`, `calendar`, `notifications`, `categories [--id N]`,
+`category <id>`, `course <id>`, `forums <id>`, `forum <id> [--limit N]`, `thread <d>`,
+`assignments <id>`, `assignment <cmid>`, `assignment-detail <ref>`,
+`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `quiz-attempt <attempt>`, `resources <id>`, `announcements`.
 
-Writes (ask the human first; `post`/`reply` also need `--yes` to skip their prompt):
-`enrol <course> --instance N [--key K]`, `subscribe <forum> [--discussion d]`,
-`post <forum> --subject S --message M --yes`, `reply <post> --message M --yes`,
-`download <cmid|url> [-o dir]`.
+Writes (ask the human first; `post`/`reply`/`submit` also need `--yes` to skip their prompt):
+`enrol <course> [--key K]`, `subscribe <forum> [--off]`,
+`post <forum> --subject S --message M --yes`, `reply <post> --message M [--subject S] --yes`,
+`submit <ref> (--text T | --file PATH) [--draft] --yes`,
+`quiz-start <cmid> [--password P] [--force] --yes`, `quiz-answer <attempt> [--set NAME=VALUE ...] [--finish] --yes`,
+`download <cmid|pluginfile-url> [-o dir]`.
 
 Watch (background monitoring): `watch <cmd...> [--interval N] [--webhook URL]
 [--webhook-header 'K: V'] [--on start|change] [-d]` starts a watch (`-d` = detached);
@@ -78,14 +85,15 @@ running watches (pruning any whose process has gone), and `watch clear` stops + 
 ## Examples
 
 ```bash
-scele -c courses | jq -r '.[] | "\(.id)\t\(.name)"'
+scele -c courses | jq -r '.[] | "\(.id)\t\(.shortname)\t\(.name)"'
 scele -c course 4234 | jq '.[].activities[] | select(.type=="assign")'
 scele -c assignment 222043 | jq '.fields["Submission status"]'
+scele -c deadlines --days 14 | jq -r '.[] | "\(.when)\t\(.course)\t\(.name)"'
 scele -c thread 62493 | jq -r '.[] | "\(.author): \(.body)"'
 ```
 
 ## Notes
 
-- Text fields (`body`, `summary`, dates) are human strings scraped from pages, not normalized.
-- Output is not paginated — a forum returns all its discussions at once.
-- Announcement forums (e.g. "Class Announcements") legitimately return `[]` when empty.
+- Dates render as `YYYY-MM-DD HH:MM WIB`; HTML bodies are flattened to plain text.
+- `forum` / `announcements` take `--limit`; `thread` returns the whole thread.
+- A `news` forum with no posts legitimately returns `[]`.

@@ -1,9 +1,13 @@
-"""Terminal login that captures the Moodle session cookie.
+"""Terminal login that mints a Moodle web-service token.
 
-Prompts for username/password and POSTs them to Moodle's native login form
-(SCELE has no CAPTCHA). Credentials are read from the terminal (password hidden)
-or from SCELE_USERNAME / SCELE_PASSWORD for automation; they are sent once to
-SCELE over HTTPS and never written to disk.
+Uses Moodle's official mobile-app flow: POST username + password to
+`/login/token.php` (`service=moodle_mobile_app`), then verify the token with
+`core_webservice_get_site_info`. The password is sent once to SCELE over HTTPS
+and never written to disk — only the resulting token is saved, and only after it
+verifies. A failed login leaves any existing token untouched.
+
+Credentials come from the prompt (password hidden) or from
+`SCELE_USERNAME` / `SCELE_PASSWORD` for automation.
 """
 
 import os
@@ -11,13 +15,13 @@ import sys
 from getpass import getpass
 
 import requests
-from bs4 import BeautifulSoup
 
 from . import __version__
-from .config import base_url, save_cookies
+from .config import base_url, save_token, ws_service
 from .output import fail
+from .session import SceleSession
 
-USER_AGENT = f"scele-cli/{__version__} (+https://github.com/; python-requests)"
+USER_AGENT = f"scele-cli/{__version__} (+https://github.com/Andrew4Coding/scele-cli)"
 
 
 def _say(msg: str = "") -> None:
@@ -31,41 +35,39 @@ def _prompt(label: str, secret: bool = False) -> str:
 
 
 def terminal_login(username: str | None = None, password: str | None = None) -> int:
-    """Log in via the native Moodle username/password form, no browser."""
+    """Mint and store a web-service token from a username/password."""
     base = base_url()
-    http = requests.Session()
-    http.headers["User-Agent"] = USER_AGENT
-
-    try:
-        page = http.get(f"{base}/login/index.php", timeout=30)
-        page.raise_for_status()
-    except requests.RequestException as e:
-        fail(f"could not reach {base}: {e}", code="request_failed")
-
-    token_el = BeautifulSoup(page.text, "lxml").select_one("input[name=logintoken]")
-    logintoken = token_el.get("value", "") if token_el else ""
 
     username = username or os.environ.get("SCELE_USERNAME") or _prompt("SCELE username: ")
     password = password or os.environ.get("SCELE_PASSWORD") or _prompt("SCELE password: ", secret=True)
     if not username or not password:
-        fail("username and password are required", code="request_failed")
+        fail("username and password are required", code="login_failed")
 
-    http.post(
-        f"{base}/login/index.php",
-        data={"anchor": "", "logintoken": logintoken,
-              "username": username, "password": password},
-        allow_redirects=True, timeout=30,
-    )
+    try:
+        resp = requests.post(
+            f"{base}/login/token.php",
+            data={"username": username, "password": password, "service": ws_service()},
+            headers={"User-Agent": USER_AGENT},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        body = resp.json()
+    except requests.RequestException as e:
+        fail(f"could not reach {base}: {e}", code="request_failed")
+    except ValueError:
+        fail("unexpected response from /login/token.php", code="login_failed")
 
-    check = http.get(f"{base}/my/", allow_redirects=True, timeout=30)
-    cookies = [
-        {"name": c.name, "value": c.value, "domain": c.domain, "path": c.path}
-        for c in http.cookies
-    ]
-    session_ok = any(c["name"].lower().startswith("moodlesession") for c in cookies)
-    if "/login/index.php" in check.url or not session_ok:
-        fail("login failed: check your username and password", code="login_failed")
+    if not body.get("token"):
+        reason = body.get("error") or body.get("errorcode") or "check your username and password"
+        fail(f"login failed: {reason}", code="login_failed")
 
-    save_cookies(cookies)
-    _say(f"Logged in as {username}. Saved session.")
+    session = SceleSession(token=body["token"])
+    try:
+        info = session.site_info(refresh=True)
+    except Exception as e:  # noqa: BLE001 - any verification failure aborts the save
+        fail(f"login failed: token not usable ({e})", code="login_failed")
+
+    save_token(body["token"], username=info.get("username") or username,
+               private_token=body.get("privatetoken", ""))
+    _say(f"Logged in as {info.get('fullname') or username}. Saved token.")
     return 0

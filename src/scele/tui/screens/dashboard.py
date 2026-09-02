@@ -19,6 +19,9 @@ class DashboardScreen(SearchableScreen, Screen[None]):
     BINDINGS = [
         Binding("r", "refresh", "Refresh", id="dashboard.refresh"),
         Binding("a", "announcements", "Announcements", id="dashboard.announcements"),
+        Binding("x", "deadlines", "Deadlines", id="dashboard.deadlines"),
+        Binding("c", "calendar", "Calendar", id="dashboard.calendar"),
+        Binding("i", "notifications", "Notifications", id="dashboard.notifications"),
         Binding("escape", "go_back", "Back", id="navigation.back"),
         FIND_BINDING,
     ]
@@ -148,12 +151,24 @@ class DashboardScreen(SearchableScreen, Screen[None]):
         self._load_data()
 
     def action_announcements(self) -> None:
-        try:
-            from .announcements import AnnouncementsScreen
+        from .announcements import AnnouncementsScreen
 
-            self.app.push_screen(AnnouncementsScreen())
-        except ImportError:
-            self.notify("Announcements screen not implemented yet", severity="information")
+        self.app.push_screen(AnnouncementsScreen())
+
+    def action_deadlines(self) -> None:
+        from .lists import DeadlinesScreen
+
+        self.app.push_screen(DeadlinesScreen())
+
+    def action_calendar(self) -> None:
+        from .lists import CalendarScreen
+
+        self.app.push_screen(CalendarScreen())
+
+    def action_notifications(self) -> None:
+        from .lists import NotificationsScreen
+
+        self.app.push_screen(NotificationsScreen())
 
     def action_go_back(self) -> None:
         self.app.pop_screen()

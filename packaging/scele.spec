@@ -2,12 +2,7 @@
 #   pyinstaller packaging/scele.spec --clean --noconfirm
 from PyInstaller.utils.hooks import collect_submodules
 
-hiddenimports = (
-    collect_submodules("scele")
-    + collect_submodules("bs4")
-    + collect_submodules("soupsieve")
-    + ["lxml.etree", "lxml._elementpath"]
-)
+hiddenimports = collect_submodules("scele")
 
 a = Analysis(
     ["entry.py"],

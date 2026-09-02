@@ -17,6 +17,7 @@ class ForumScreen(SearchableScreen, Screen):
         Binding("backspace", "go_back", "Back", show=False),
         Binding("r", "refresh", "Refresh", id="forum.refresh"),
         Binding("n", "new_discussion", "New discussion", id="forum.new_discussion"),
+        Binding("s", "subscribe", "Subscribe", id="forum.subscribe"),
         FIND_BINDING,
     ]
 
@@ -94,6 +95,23 @@ class ForumScreen(SearchableScreen, Screen):
         from .composer import NewDiscussionModal
 
         self.app.push_screen(NewDiscussionModal(self.forum_id), self._discussion_posted)
+
+    def action_subscribe(self) -> None:
+        self._subscribe()
+
+    @work(thread=True)
+    def _subscribe(self) -> None:
+        try:
+            ok = api.forum_subscribe(self.app.session, self.forum_id, state=True)
+        except Exception as exc:  # noqa: BLE001
+            self.app.call_from_thread(self.notify, f"Subscribe failed: {exc}",
+                                      severity="error")
+        else:
+            self.app.call_from_thread(
+                self.notify,
+                "Subscribed to this forum" if ok else "Subscription unchanged",
+                severity="information",
+            )
 
     def _discussion_posted(self, result: dict[str, object] | None) -> None:
         if not result or not result.get("ok"):

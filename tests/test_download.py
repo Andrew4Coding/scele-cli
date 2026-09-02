@@ -4,7 +4,7 @@ from scele import api
 
 
 class _Response:
-    url = "https://scele.example/pluginfile/file.txt"
+    url = "https://scele.example/webservice/pluginfile.php/1/mod_resource/content/0/file.txt?token=T"
     headers = {
         "content-disposition": 'attachment; filename="file.txt"',
         "content-length": "6",
@@ -31,18 +31,27 @@ class _Http:
         self.response = response
 
     def get(self, url, params, stream, timeout):
-        assert url == "https://scele.example/pluginfile/file.txt"
+        assert url == (
+            "https://scele.example/webservice/pluginfile.php"
+            "/1/mod_resource/content/0/file.txt?token=T"
+        )
         assert params == {"forcedownload": "1"}
         assert stream is True
-        assert timeout == 60
+        assert timeout == 120
         return self.response
 
 
 class _Session:
     base = "https://scele.example"
+    token = "T"
 
     def __init__(self, response):
         self.http = _Http(response)
+
+    def pluginfile_url(self, file_url):
+        from scele.session import SceleSession
+
+        return SceleSession.pluginfile_url(self, file_url)
 
 
 def test_download_reports_progress_and_closes_response(tmp_path: Path):
@@ -51,7 +60,7 @@ def test_download_reports_progress_and_closes_response(tmp_path: Path):
 
     destination = api.download(
         _Session(response),
-        "/pluginfile/file.txt",
+        "/pluginfile.php/1/mod_resource/content/0/file.txt",
         tmp_path,
         progress=lambda downloaded, total: progress.append((downloaded, total)),
     )

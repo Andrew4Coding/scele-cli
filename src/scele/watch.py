@@ -27,7 +27,7 @@ from .config import watches_dir
 
 MIN_INTERVAL = 30
 DEFAULT_INTERVAL = 300
-_VOLATILE_KEYS = {"sesskey"}
+_VOLATILE_KEYS = {"sesskey", "token", "token_preview", "age_days"}
 _NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 
 

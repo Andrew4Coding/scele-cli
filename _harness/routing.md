@@ -12,11 +12,12 @@ Use this file to quickly find which files to read or modify for a given task.
 
 | Task | Primary files | Also check |
 |------|--------------|------------|
-| Add/modify a CLI command | `src/scele/cli.py` | `src/scele/api.py`, `src/scele/models.py` |
+| Add/modify a CLI command | `src/scele/cli.py` | `src/scele/api.py`, `src/scele/models.py`, `src/scele/schema.py` |
 | Modify the `watch` command | `src/scele/watch.py` | `src/scele/cli.py`, `src/scele/schema.py`, `tests/test_watch.py` |
-| Add/fix an HTML parser | `src/scele/parsers.py` | `tests/test_parsers.py`, `ENDPOINTS.md` |
-| Change data models | `src/scele/models.py` | `src/scele/schema.py`, `src/scele/parsers.py` |
-| Fix auth / session issues | `src/scele/auth.py`, `src/scele/session.py` | `src/scele/config.py` |
+| Map a new web-service function | `src/scele/api.py` | `tests/test_api.py`, `ENDPOINTS.md` |
+| Shape HTML / timestamps | `src/scele/textutil.py` | `src/scele/api.py` |
+| Change data models | `src/scele/models.py` | `src/scele/schema.py`, `src/scele/output.py` |
+| Fix auth / token issues | `src/scele/auth.py`, `src/scele/session.py` | `src/scele/config.py` |
 | Change output formatting | `src/scele/output.py` | `src/scele/cli.py` |
 | Fix schema introspection | `src/scele/schema.py` | `src/scele/models.py`, `src/scele/cli.py` |
 | Update version | `src/scele/__init__.py` | `scripts/release.sh` |
@@ -25,7 +26,8 @@ Use this file to quickly find which files to read or modify for a given task.
 
 | Task | Files |
 |------|-------|
-| Add/fix parser tests | `tests/test_parsers.py` |
+| Add/fix api mapping tests | `tests/test_api.py` |
+| Add/fix schema tests | `tests/test_schema.py` |
 | Add/fix watch tests | `tests/test_watch.py` |
 | Run tests | `make test` or `.venv/bin/pytest -q` |
 
@@ -66,11 +68,12 @@ Use this file to quickly find which files to read or modify for a given task.
 4. `tests/test_watch.py`
 5. Docs: `CLAUDE.md`, `AGENTS.md.bak`, `skills/scele/SKILL.md`
 
-**Adding a new Moodle page command** (e.g. `scele grades <course-id>`):
-1. `ENDPOINTS.md` — document the URL pattern and DOM structure
-2. `src/scele/models.py` — add dataclass
-3. `src/scele/parsers.py` — add parser function
-4. `tests/test_parsers.py` — add parser test
-5. `src/scele/api.py` — add API method
-6. `src/scele/cli.py` — add Click command
-7. Micro-commit each step
+**Adding a new command** (e.g. `scele grades <course-id>`):
+1. `ENDPOINTS.md` — add the row: command → web-service function(s)
+2. `src/scele/models.py` — add a dataclass (with `to_dict()`)
+3. `src/scele/api.py` — add the function: `s.ws("<wsfunction>", ...)` + map to the dataclass
+4. `tests/test_api.py` — add a `FakeSession` payload + assertions
+5. `src/scele/cli.py` — add the Click command
+6. `src/scele/schema.py` — `RETURNS` + `EXAMPLES` entries; `src/scele/output.py` if it needs a renderer
+7. Docs: `README.md`, `skills/scele/SKILL.md`, `AGENTS.md.bak`
+8. Micro-commit each step

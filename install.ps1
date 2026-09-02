@@ -49,7 +49,7 @@ if ($LASTEXITCODE -ne 0) {
 
 if ($Uninstall) {
     Py -m pipx uninstall scele-cli
-    Write-Host "Removed. (Session cookie left in place.)"
+    Write-Host "Removed. (Auth token left in place; run 'scele logout' to remove it.)"
     exit 0
 }
 

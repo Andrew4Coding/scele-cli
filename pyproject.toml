@@ -19,8 +19,6 @@ classifiers = [
 ]
 dependencies = [
     "requests>=2.31",
-    "beautifulsoup4>=4.12",
-    "lxml>=5.0",
     "click>=8.1",
 ]
 

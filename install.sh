@@ -49,7 +49,7 @@ command -v pipx >/dev/null 2>&1 || PIPX="$PY -m pipx"
 
 if [ -n "$UNINSTALL" ]; then
     $PIPX uninstall scele-cli || true
-    echo "Removed. (Session cookie left in place; delete it manually if you want.)"
+    echo "Removed. (Auth token left in place; run 'scele logout' to remove it.)"
     exit 0
 fi
 

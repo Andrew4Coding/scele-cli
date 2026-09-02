@@ -69,8 +69,9 @@ npx scele-cli courses
 ### As an agent skill
 
 ```bash
+scele skill                                # if scele is installed globally
 npx skills add Andrew4Coding/scele-cli     # via vercel-labs/skills
-npm install -g scele-cli                   # or via bundled npm installer (scele-cli)
+npx scele-cli skill                        # or on-demand via npx
 ```
 
 See [SKILLS.md](SKILLS.md) and [RELEASING.md](RELEASING.md).

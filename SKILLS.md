@@ -9,7 +9,7 @@ The skill and the CLI install separately:
 | | what it is | install |
 |---|---|---|
 | **CLI** | the `scele` command | `npm install -g scele-cli` (npm), `curl -fsSL https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.sh \| sh` (binary), or `pipx install git+https://github.com/Andrew4Coding/scele-cli.git` |
-| **Skill** | instructions telling an agent *when and how* to call `scele` | `scele-skill` (bundled with `scele-cli`), or `npx skills add Andrew4Coding/scele-cli` |
+| **Skill** | instructions telling an agent *when and how* to call `scele` | `scele skill` or `npx skills add Andrew4Coding/scele-cli` |
 
 ## Install the skill — `npx skills`
 
@@ -26,27 +26,22 @@ npx skills update scele
 It clones the repo, finds `skills/scele/SKILL.md`, and links it into your agent's skills
 directory (`~/.claude/skills/` global, or `./.claude/skills/` in a project).
 
-## Install the skill — bundled installer (`npm` / `npx`)
+## Install the skill — `scele skill`
 
-Install globally via npm so `scele-cli` is added to your `PATH`:
+If you installed `scele` via npm (`npm install -g scele-cli`):
 
 ```bash
-npm install -g scele-cli
-
-scele-cli                   # -> ~/.claude/skills/scele/   (user scope)
-scele-cli --project         # -> ./.claude/skills/scele/   (repo scope)
-scele-cli --dir <path>      # -> <path>/scele/
-scele-cli --with-cli        # also installs the scele Python CLI
-scele-cli --uninstall       # remove the installed skill
+scele skill                 # -> ~/.claude/skills/scele/   (user scope)
+scele skill --project       # -> ./.claude/skills/scele/   (repo scope)
+scele skill --dir <path>    # -> <path>/scele/
+scele skill --uninstall     # remove the installed skill
 ```
 
 Or run on-demand with `npx` without a global install:
 
 ```bash
-npx scele-cli                   # -> ~/.claude/skills/scele/
-npx scele-cli --project         # -> ./.claude/skills/scele/
-npx scele-cli --with-cli        # also installs the scele CLI
-npx scele-cli --uninstall
+npx scele-cli skill
+npx scele-cli skill --project
 ```
 
 ## Manual install (no npx)

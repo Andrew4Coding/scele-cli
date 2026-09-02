@@ -11,23 +11,34 @@ from .config import base_url
 RETURNS: dict[str, str] = {
     "login": "ActionResult",
     "logout": "ActionResult",
-    "whoami": "{ok: bool, authenticated: bool, base_url: string, sesskey: string}",
+    "whoami": "{ok: bool, authenticated: bool, base_url: string, user: string, "
+              "userid: integer, username: string, token: object}",
     "courses": "Course[]",
+    "course-detail": "CourseDetail",
+    "people": "Person[]",
+    "grades": "Grade[]",
+    "course-updates": "{course_id, since_days, updated: {cmid, module, changed}[]}",
+    "deadlines": "Deadline[]",
+    "calendar": "CalendarEvent[]",
+    "notifications": "Notification[]",
     "categories": "Category[]",
     "category": "Course[]",
     "course": "Section[]",
     "forums": "Activity[]",
     "forum": "Discussion[]",
     "thread": "Post[]",
-    "assignments": "Activity[]",
+    "assignments": "AssignmentInfo[]",
     "assignment": "AssignmentStatus",
-    "resources": "Activity[]",
+    "assignment-detail": "AssignmentInfo",
+    "submit": "ActionResult & {stage: string, warnings: object[]}",
+    "resources": "Resource[]",
     "announcements": "Announcement[]",
     "enrol": "ActionResult",
-    "subscribe": "ActionResult",
+    "subscribe": "ActionResult & {subscribed: bool}",
     "post": "ActionResult & {url: string}",
     "reply": "ActionResult & {url: string}",
     "download": "ActionResult & {path: string}",
+    "tui": "launches the interactive terminal UI (no stdout document)",
     "watch": "subcommands: start -> ActionResult & {name, detached, pid?}; "
              "ls -> {name, command, interval, status, last_change, tick_count}[] "
              "(running only; stopped watches are pruned); run -> WatchEvent; "
@@ -38,23 +49,36 @@ RETURNS: dict[str, str] = {
 }
 
 EXAMPLES: dict[str, str] = {
+    "login": "SCELE_USERNAME=you SCELE_PASSWORD=secret scele login",
+    "logout": "scele logout",
+    "whoami": "scele whoami",
     "courses": "scele courses",
+    "course-detail": "scele course-detail 4234",
+    "people": "scele people 4234",
+    "grades": "scele grades 4234",
+    "course-updates": "scele course-updates 4234 --since-days 14",
+    "deadlines": "scele deadlines --days 14",
+    "calendar": "scele calendar --days-ahead 30",
+    "notifications": "scele notifications --limit 20",
     "categories": "scele categories --id 31",
     "category": "scele category 176",
     "course": "scele course 4234",
     "forums": "scele forums 4234",
-    "forum": "scele forum 222560",
+    "forum": "scele forum 17474",
     "thread": "scele thread 62493",
     "assignments": "scele assignments 4234",
     "assignment": "scele assignment 222043",
+    "assignment-detail": "scele assignment-detail 222043",
+    "submit": "scele submit 55010 --text 'my answer' --yes",
     "resources": "scele resources 4234",
     "announcements": "scele announcements",
-    "enrol": "scele enrol 4128 --instance 6339 --key secret",
-    "subscribe": "scele subscribe 17474 --discussion 62493",
+    "enrol": "scele enrol 4128 --key secret",
+    "subscribe": "scele subscribe 17474",
     "post": "scele post 17474 --subject 'Hi' --message 'Hello' --yes",
     "reply": "scele reply 553756 --message 'Thanks' --yes",
     "download": "scele download 222038 -o ./dl",
-    "watch": "scele watch assignments 4234 --interval 600 --webhook https://hooks.example/x -d",
+    "tui": "scele tui",
+    "watch": "scele watch deadlines --interval 600 --webhook https://hooks.example/x -d",
 }
 
 _PY_TO_JSON = {str: "string", int: "integer", float: "number", bool: "boolean", dict: "object"}
@@ -84,6 +108,11 @@ def _models() -> dict[str, dict]:
             out[name] = {f.name: _type_name(f.type) for f in dataclasses.fields(obj)}
     if "AssignmentStatus" in out:
         out["AssignmentStatus"]["files"] = "{name: string, url: string}[]"
+    for key in ("AssignmentInfo",):
+        if key in out:
+            out[key]["attachments"] = "{filename: string, filesize: integer, fileurl: string}[]"
+    if "CourseDetail" in out:
+        out["CourseDetail"]["teachers"] = "{name: string, roles: string[]}[]"
     out["ActionResult"] = {"ok": "boolean", "action": "string", "...": "command-specific fields"}
     return out
 
@@ -126,10 +155,11 @@ def build(group) -> dict:
             "note": "`scele schema` itself always prints JSON",
         },
         "auth": {
+            "mechanism": "Moodle mobile web-service token, minted from /login/token.php",
             "setup": "scele login  (prompts for username + password; no browser, no CAPTCHA)",
             "non_interactive": "set SCELE_USERNAME and SCELE_PASSWORD, then run `scele login`",
             "check": "scele whoami",
-            "store": "~/.config/scele/cookies.json",
+            "store": "~/.config/scele/token.json  (token only; the password is never stored)",
             "error_code": "not_authenticated",
         },
         "error_codes": [
@@ -137,10 +167,11 @@ def build(group) -> dict:
         ],
         "id_conventions": {
             "course id": "from `scele courses` / URLs `course/view.php?id=<course>`",
-            "cmid (activity/module id)": "from `scele course <id>`; used by forum/assignment/resource",
-            "forum id": "the cmid of a forum activity -> `scele forum <cmid>`",
-            "discussion id (d)": "from `scele forum <cmid>` -> `scele thread <d>`",
+            "cmid (activity/module id)": "from `scele course <id>`; used by assignment/resource",
+            "forum id": "forum instance id from `scele forums <course>` -> `scele forum <id>`",
+            "discussion id (d)": "from `scele forum <id>` -> `scele thread <d>`",
             "post id": "from `scele thread <d>` -> `scele reply <post>`",
+            "assignment ref": "instance id or cmid from `scele assignments <course>`",
         },
         "commands": commands,
         "models": _models(),

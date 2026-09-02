@@ -15,7 +15,14 @@ import sys
 import click
 
 from .models import (
-    Activity, Announcement, AssignmentStatus, Category, Course, Discussion, Post, Section,
+    Activity, Announcement, AssignmentInfo, AssignmentStatus, CalendarEvent, Category,
+    Course, CourseDetail, Deadline, Discussion, Grade, Notification, Person, Post,
+    Resource, Section,
+)
+
+_FLAT_MODELS = (
+    Course, Category, Discussion, Activity, Resource, Person, Deadline,
+    CalendarEvent, Notification, Grade, AssignmentInfo,
 )
 
 try:  # optional dependency
@@ -291,8 +298,9 @@ def _render(obj) -> None:
         _announcements(obj)
     elif isinstance(obj, AssignmentStatus):
         _assignment(obj)
-    elif isinstance(obj, list) and obj and all(
-            isinstance(x, (Course, Category, Discussion, Activity)) for x in obj):
+    elif isinstance(obj, (CourseDetail, AssignmentInfo)):
+        _kv(_plain(obj))
+    elif isinstance(obj, list) and obj and all(isinstance(x, _FLAT_MODELS) for x in obj):
         _table([_plain(x) for x in obj])
     elif isinstance(obj, list):
         if obj and all(isinstance(x, dict) for x in obj):

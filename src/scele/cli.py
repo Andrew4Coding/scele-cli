@@ -7,9 +7,9 @@ import click
 
 from . import __version__, api, watch as _watch
 from .auth import terminal_login
-from .config import base_url, clear_cookies
+from .config import base_url, clear_auth, token_status
 from .output import emit, fail
-from .session import NotAuthenticatedError, SceleSession
+from .session import NotAuthenticatedError, RequestFailedError, SceleSession
 
 
 def _session(ctx) -> SceleSession:
@@ -27,6 +27,8 @@ def _guard(fn):
         fail(str(e), code="not_authenticated")
     except _watch.WatchError as e:
         fail(str(e), code="watch_not_found")
+    except RequestFailedError as e:
+        fail(str(e), code="request_failed")
     except Exception as e:  # noqa: BLE001 - surface any failure as JSON
         fail(f"{type(e).__name__}: {e}", code="request_failed")
 
@@ -73,7 +75,7 @@ def schema(ctx):
                                        "Avoid on the command line; prefer the prompt or env var.")
 @click.pass_context
 def login(ctx, username, password):
-    """Log in with your SCELE username and password and store the session cookie."""
+    """Log in with your SCELE username and password and store a web-service token."""
     code = terminal_login(username, password)
     _out(ctx, {"ok": code == 0, "action": "login"})
 
@@ -81,19 +83,22 @@ def login(ctx, username, password):
 @main.command()
 @click.pass_context
 def logout(ctx):
-    """Delete the stored session cookie."""
-    clear_cookies()
+    """Delete the stored web-service token."""
+    clear_auth()
     _out(ctx, {"ok": True, "action": "logout"})
 
 
 @main.command()
 @click.pass_context
 def whoami(ctx):
-    """Report whether the stored session is valid."""
+    """Report whether the stored token is valid and who it belongs to."""
     s = _session(ctx)
+    store = token_status()
     if s.is_authenticated():
-        _out(ctx, {"ok": True, "authenticated": True,
-                   "base_url": base_url(), "sesskey": s.sesskey()})
+        info = s.site_info()
+        _out(ctx, {"ok": True, "authenticated": True, "base_url": base_url(),
+                   "user": info.get("fullname"), "userid": info.get("userid"),
+                   "username": info.get("username"), "token": store})
     else:
         fail("not authenticated; run `scele login`", code="not_authenticated")
 
@@ -133,6 +138,72 @@ def course(ctx, course_id):
     _out(ctx, _guard(lambda: api.course(s, course_id)))
 
 
+@main.command("course-detail")
+@click.argument("course_id")
+@click.pass_context
+def course_detail(ctx, course_id):
+    """Show course metadata: category, dates, teachers, summary."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.course_detail(s, course_id)))
+
+
+@main.command()
+@click.argument("course_id")
+@click.pass_context
+def people(ctx, course_id):
+    """List the people enrolled in a course."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.people(s, course_id)))
+
+
+@main.command()
+@click.argument("course_id")
+@click.pass_context
+def grades(ctx, course_id):
+    """Show your grade items for a course."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.grades(s, course_id)))
+
+
+@main.command("course-updates")
+@click.argument("course_id")
+@click.option("--since-days", default=7, show_default=True, help="Look back this many days.")
+@click.pass_context
+def course_updates(ctx, course_id, since_days):
+    """Show what changed in a course recently."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.course_updates(s, course_id, since_days)))
+
+
+@main.command()
+@click.option("--days", default=14, show_default=True, help="Look-ahead window in days.")
+@click.option("--limit", default=25, show_default=True, help="Max events to return.")
+@click.pass_context
+def deadlines(ctx, days, limit):
+    """List upcoming deadlines across all your courses."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.deadlines(s, days, limit)))
+
+
+@main.command()
+@click.option("--days-back", default=7, show_default=True)
+@click.option("--days-ahead", default=30, show_default=True)
+@click.pass_context
+def calendar(ctx, days_back, days_ahead):
+    """List calendar events (classes, custom events, deadlines)."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.calendar(s, days_back, days_ahead)))
+
+
+@main.command()
+@click.option("--limit", default=20, show_default=True, help="Max notifications to return.")
+@click.pass_context
+def notifications(ctx, limit):
+    """Show your recent SCELE notifications."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.notifications(s, limit)))
+
+
 @main.command()
 @click.argument("course_id")
 @click.pass_context
@@ -144,11 +215,12 @@ def forums(ctx, course_id):
 
 @main.command()
 @click.argument("forum_id")
+@click.option("--limit", default=50, show_default=True, help="Max discussions to return.")
 @click.pass_context
-def forum(ctx, forum_id):
+def forum(ctx, forum_id, limit):
     """List discussions in a forum."""
     s = _session(ctx)
-    _out(ctx, _guard(lambda: api.forum(s, forum_id)))
+    _out(ctx, _guard(lambda: api.forum(s, forum_id, limit)))
 
 
 @main.command()
@@ -178,6 +250,40 @@ def assignment(ctx, cmid):
     _out(ctx, _guard(lambda: api.assignment(s, cmid)))
 
 
+@main.command("assignment-detail")
+@click.argument("ref")
+@click.pass_context
+def assignment_detail(ctx, ref):
+    """Show an assignment's instructions, due dates and brief attachments (id or cmid)."""
+    s = _session(ctx)
+    _out(ctx, _guard(lambda: api.assignment_detail(s, ref)))
+
+
+@main.command()
+@click.argument("ref")
+@click.option("--text", help="Online-text submission body.")
+@click.option("--file", "file_path", type=click.Path(exists=True, dir_okay=False),
+              help="Local file to upload as the submission.")
+@click.option("--draft", is_flag=True, help="Save as a draft; do not submit for grading.")
+@click.option("--yes", is_flag=True, help="Skip the confirmation prompt.")
+@click.pass_context
+def submit(ctx, ref, text, file_path, draft, yes):
+    """Submit online text or a file to an assignment (id or cmid)."""
+    if bool(text) == bool(file_path):
+        fail("pass exactly one of --text or --file", code="request_failed")
+    what = "text" if text else f"file {file_path}"
+    final = not draft
+    if not yes:
+        verb = "submit for grading" if final else "save as draft"
+        click.confirm(f"{verb.capitalize()}: {what} -> assignment {ref}?", abort=True, err=True)
+    s = _session(ctx)
+    if text:
+        res = _guard(lambda: api.submit_text(s, ref, text, final))
+    else:
+        res = _guard(lambda: api.submit_file(s, ref, file_path, final))
+    _out(ctx, {"action": "submit", **res})
+
+
 @main.command()
 @click.argument("course_id")
 @click.pass_context
@@ -197,7 +303,7 @@ def announcements(ctx):
 
 @main.command()
 @click.argument("course_id")
-@click.option("--instance", required=True, help="Self-enrol instance id (from the enrol page).")
+@click.option("--instance", default=None, help="Self-enrol instance id (optional).")
 @click.option("--key", default="", help="Enrolment key, if the course requires one.")
 @click.pass_context
 def enrol(ctx, course_id, instance, key):
@@ -209,14 +315,14 @@ def enrol(ctx, course_id, instance, key):
 
 @main.command()
 @click.argument("forum_id")
-@click.option("--discussion", help="Subscribe to a single discussion id instead of the forum.")
+@click.option("--off", is_flag=True, help="Unsubscribe instead of subscribe.")
 @click.pass_context
-def subscribe(ctx, forum_id, discussion):
-    """Toggle subscription to a forum or discussion."""
+def subscribe(ctx, forum_id, off):
+    """Subscribe to (or, with --off, unsubscribe from) a forum."""
     s = _session(ctx)
-    ok = _guard(lambda: api.forum_subscribe(s, forum_id, discussion))
+    ok = _guard(lambda: api.forum_subscribe(s, forum_id, state=not off))
     _out(ctx, {"ok": bool(ok), "action": "subscribe",
-               "forum_id": forum_id, "discussion_id": discussion})
+               "forum_id": forum_id, "subscribed": not off})
 
 
 @main.command()
@@ -237,14 +343,15 @@ def post(ctx, forum_id, subject, message, yes):
 @main.command()
 @click.argument("post_id")
 @click.option("--message", required=True)
+@click.option("--subject", default="", help="Override the auto 'Re:' subject.")
 @click.option("--yes", is_flag=True, help="Skip the confirmation prompt.")
 @click.pass_context
-def reply(ctx, post_id, message, yes):
+def reply(ctx, post_id, message, subject, yes):
     """Reply to a forum post."""
     if not yes:
         click.confirm("Post this reply?", abort=True, err=True)
     s = _session(ctx)
-    url = _guard(lambda: api.forum_reply(s, post_id, message))
+    url = _guard(lambda: api.forum_reply(s, post_id, message, subject))
     _out(ctx, {"ok": True, "action": "reply", "post_id": post_id, "url": url})
 
 

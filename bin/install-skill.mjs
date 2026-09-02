@@ -42,11 +42,15 @@ function parseArgs(argv) {
 function readHelp() {
   return `Install the \`scele\` agent skill.
 
-  npx scele-skill                 ~/.claude/skills/scele/   (user scope)
-  npx scele-skill --project       ./.claude/skills/scele/   (repo scope)
-  npx scele-skill --dir <path>    <path>/scele/
-  npx scele-skill --with-cli      also install the scele Python CLI
-  npx scele-skill --uninstall     remove the installed skill`;
+  npm install -g scele-skill      install globally (recommended for CLI)
+  scele-skill                     ~/.claude/skills/scele/   (user scope)
+  scele-skill --project           ./.claude/skills/scele/   (repo scope)
+  scele-skill --dir <path>        <path>/scele/
+  scele-skill --with-cli          also install the scele Python CLI
+  scele-skill --uninstall         remove the installed skill
+
+  Or on-demand via npx:
+  npx scele-skill [--project|--with-cli|--uninstall]`;
 }
 
 function skillsBaseDir(opts) {
@@ -96,7 +100,7 @@ function main() {
   console.log("\nNext:");
   console.log("  - Restart your agent / Claude Code so it picks up the skill.");
   if (!opts.withCli) {
-    console.log("  - Install the CLI:  npx scele-skill --with-cli   (or ./install.sh)");
+    console.log("  - Install the CLI:  scele-skill --with-cli   (or npx scele-skill --with-cli)");
   }
   console.log("  - Then:  scele login   &&   scele courses");
   process.exit(cliCode);

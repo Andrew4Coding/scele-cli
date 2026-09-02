@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Installer for the `scele` agent skill (and optionally the scele Python CLI)",
   "type": "module",
+  "preferGlobal": true,
   "bin": {
     "scele-skill": "bin/install-skill.mjs"
   },

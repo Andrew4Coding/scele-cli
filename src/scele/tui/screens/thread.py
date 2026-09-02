@@ -55,13 +55,36 @@ class ThreadScreen(Screen):
         container = self.query_one("#posts-container", VerticalScroll)
         container.remove_children()
         container.loading = False
-        for i, post in enumerate(posts, 1):
-            container.mount(PostView(post, index=i))
-        if not posts:
+        first_view = None
+        for i, post in enumerate(self._posts, 1):
+            view = PostView(post, index=i)
+            container.mount(view)
+            if post.id == self._selected_post_id:
+                first_view = view
+        if not self._posts:
             container.mount(Static("[dim]No posts in this thread[/dim]"))
+        if first_view is not None:
+            self.call_after_refresh(first_view.focus)
+        self._update_title()
+
+    def _post_by_id(self, post_id):
+        return next((p for p in self._posts if p.id == post_id), None)
+
+    def _update_title(self) -> None:
+        title = self.query_one("#thread-title", Static)
+        target = self._post_by_id(self._selected_post_id)
+        if target is None:
+            title.update(f"THREAD {self.discussion_id}")
+            return
+        idx = self._posts.index(target) + 1
+        who = target.author or "post"
+        title.update(
+            f"THREAD {self.discussion_id}  —  replying to #{idx} ({who})"
+        )
 
     def on_post_view_selected(self, message) -> None:
         self._selected_post_id = message.post.id
+        self._update_title()
 
     def action_reply(self) -> None:
         if not self._posts:
@@ -70,7 +93,12 @@ class ThreadScreen(Screen):
         from .composer import ReplyModal
 
         post_id = self._selected_post_id or self._posts[0].id
-        self.app.push_screen(ReplyModal(post_id), self._reply_posted)
+        target = self._post_by_id(post_id)
+        label = None
+        if target is not None:
+            idx = self._posts.index(target) + 1
+            label = f"#{idx} by {target.author or 'unknown'}"
+        self.app.push_screen(ReplyModal(post_id, target_label=label), self._reply_posted)
 
     def _reply_posted(self, result: dict[str, object] | None) -> None:
         if not result or not result.get("ok"):

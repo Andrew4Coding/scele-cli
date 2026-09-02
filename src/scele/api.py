@@ -124,6 +124,9 @@ def forum_reply(s: SceleSession, post_id: str, message: str) -> str:
     itemid = _hidden(page.text, "message[itemid]")
     data = {
         "reply": post_id, "parent": post_id,
+        "discussion": _hidden(page.text, "discussion"),
+        "course": _hidden(page.text, "course"),
+        "forum": _hidden(page.text, "forum"),
         "sesskey": s.sesskey(),
         "_qf__mod_forum_post_form": "1",
         "subject": _hidden(page.text, "subject") or "Re:",

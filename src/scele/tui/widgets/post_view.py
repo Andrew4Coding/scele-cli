@@ -47,6 +47,11 @@ class PostView(Widget):
         self.post = post
         self.index = index
 
+    def on_mount(self) -> None:
+        depth = getattr(self.post, "depth", 0) or 0
+        if depth:
+            self.styles.margin = (0, 1, 1, min(depth, 8) * 3 + 1)
+
     class Selected(Message):
         """Posted when the user focuses a post to reply to it."""
 
@@ -63,7 +68,9 @@ class PostView(Widget):
     def compose(self) -> ComposeResult:
         post = self.post
         if isinstance(post, Post):
-            yield Static(f"#{self.index}", classes="post-index")
+            depth = getattr(post, "depth", 0) or 0
+            marker = f"#{self.index}" + ("  [dim]↳ reply[/dim]" if depth else "")
+            yield Static(marker, classes="post-index")
             yield Static(f"{post.subject or '(no subject)'}", classes="post-header")
             meta_parts = [x for x in (post.author, post.created) if x]
             yield Static(" — ".join(meta_parts), classes="post-meta")

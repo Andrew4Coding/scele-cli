@@ -38,7 +38,10 @@ Table rows: `Submission status`, `Grading status`, `Time remaining`, `Last modif
 
 ### Forum thread (`/mod/forum/discuss.php?d=`)
 Each post: author (`name - <NPM>`), timestamp, `Number of replies`, body text, `Permalink`,
-reply link `/mod/forum/post.php?reply=<postid>`.
+reply link `/mod/forum/post.php?reply=<postid>`. Nested replies live in
+`div.indent[data-region=replies-container]`; a reply's parent id comes from its
+`Show parent` link (`…#p<parentid>`). `parse_discussion` fills `Post.parent` and a
+derived `Post.depth` (0 = discussion starter) so the flat list keeps the reply tree.
 
 ### Dashboard (`/` when logged in)
 Announcement blocks: `Pengumuman Akademis` — each item has author, date, body, `Permalink`,

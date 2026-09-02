@@ -164,9 +164,12 @@ class ReplyModal(_ForumComposerModal):
     heading = "REPLY TO FORUM POST"
     confirm_label = "Reply"
 
-    def __init__(self, post_id: str) -> None:
+    def __init__(self, post_id: str, target_label: str | None = None) -> None:
         super().__init__()
         self.post_id = post_id
+        self.heading = (
+            f"REPLY TO {target_label}" if target_label else "REPLY TO FORUM POST"
+        )
 
     def _request(self, subject: str, message: str) -> str:
         session = self.app.session

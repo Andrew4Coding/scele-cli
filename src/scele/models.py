@@ -68,6 +68,8 @@ class Post:
     created: str
     subject: str
     body: str
+    parent: str = ""
+    depth: int = 0
 
     def to_dict(self) -> dict:
         return asdict(self)

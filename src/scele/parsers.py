@@ -159,8 +159,19 @@ def parse_discussion(soup: BeautifulSoup) -> list[Post]:
             ".post-content-container, [data-region-content=forum-post-core] > .row .no-overflow, "
             ".posts-content, .fullpost, .no-overflow"
         )
+        parent_link = core.select_one("a[title*='parent of this post']")
+        parent = ""
+        if parent_link and "#p" in parent_link.get("href", ""):
+            parent = parent_link["href"].split("#p", 1)[1]
         out.append(Post(id=pid, author=author, created=created,
-                        subject=subject, body=_body(body_node)))
+                        subject=subject, body=_body(body_node), parent=parent))
+    by_id = {p.id: p for p in out}
+    for p in out:
+        depth, cur = 0, p.parent
+        while cur and cur in by_id and depth < len(out):
+            depth += 1
+            cur = by_id[cur].parent
+        p.depth = depth
     return out
 
 

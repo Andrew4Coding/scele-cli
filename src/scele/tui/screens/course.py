@@ -29,6 +29,9 @@ class CourseScreen(SearchableScreen, Screen):
         Binding("escape", "go_back", "Back", id="navigation.back"),
         Binding("backspace", "go_back", "Back", show=False),
         Binding("r", "refresh", "Refresh", id="course.refresh"),
+        Binding("i", "info", "Info", id="course.info"),
+        Binding("g", "grades", "Grades", id="course.grades"),
+        Binding("p", "people", "People", id="course.people"),
         FIND_BINDING,
     ]
 
@@ -112,6 +115,10 @@ class CourseScreen(SearchableScreen, Screen):
             from .assignment import AssignmentScreen
 
             self.app.push_screen(AssignmentScreen(activity.cmid))
+        elif activity.type == "quiz":
+            from .quiz import QuizScreen
+
+            self.app.push_screen(QuizScreen(activity.cmid))
         elif activity.type in ("resource", "folder"):
             from .download import DownloadModal
 
@@ -126,6 +133,21 @@ class CourseScreen(SearchableScreen, Screen):
         if not result or not result.get("ok"):
             return
         self.notify(f"Downloaded to {result.get('path', 'disk')}", severity="information")
+
+    def action_info(self) -> None:
+        from .course_info import CourseInfoScreen
+
+        self.app.push_screen(CourseInfoScreen(self.course_id))
+
+    def action_grades(self) -> None:
+        from .lists import GradesScreen
+
+        self.app.push_screen(GradesScreen(self.course_id))
+
+    def action_people(self) -> None:
+        from .lists import PeopleScreen
+
+        self.app.push_screen(PeopleScreen(self.course_id))
 
     def action_go_back(self) -> None:
         self.app.pop_screen()

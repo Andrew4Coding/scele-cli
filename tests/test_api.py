@@ -144,6 +144,20 @@ def test_notifications_maps_popup_feed():
     assert n.sender == "mod_assign" and n.subject == "SECTION A & B graded"
 
 
+def test_course_detail_uses_contacts_for_teachers():
+    s = FakeSession({
+        "core_course_get_courses_by_field": {"courses": [
+            {"id": 4234, "shortname": "Komas", "fullname": "Komputer &amp; Masyarakat",
+             "categoryname": "REG", "startdate": 0, "enddate": 0, "summary": "",
+             "contacts": [{"id": 437, "fullname": "R. Yugo K. Isal"}]},
+        ]},
+    })
+    d = api.course_detail(s, "4234")
+    assert d.fullname == "Komputer & Masyarakat"
+    assert d.teachers == [{"id": "437", "name": "R. Yugo K. Isal"}]
+    assert [c[0] for c in s.calls] == ["core_course_get_courses_by_field"]  # no roster fetch
+
+
 def test_people_maps_roles():
     s = FakeSession({
         "core_enrol_get_enrolled_users": [

@@ -16,11 +16,14 @@ class AssignmentScreen(Screen):
         Binding("escape", "go_back", "Back", id="navigation.back"),
         Binding("backspace", "go_back", "Back", show=False),
         Binding("r", "refresh", "Refresh", id="assignment.refresh"),
+        Binding("i", "detail", "Instructions", id="assignment.detail"),
+        Binding("s", "submit", "Submit", id="assignment.submit"),
     ]
 
     def __init__(self, cmid: str):
         super().__init__()
         self.cmid = cmid
+        self._name = ""
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -55,6 +58,7 @@ class AssignmentScreen(Screen):
 
     def _populate(self, status) -> None:
         self.loading = False
+        self._name = status.name or ""
         self.query_one("#assignment-name", Static).update(
             f"[b]{status.name or 'Assignment'}[/b]\n[dim]cmid: {status.cmid}[/dim]"
         )
@@ -84,6 +88,24 @@ class AssignmentScreen(Screen):
         else:
             self.query_one("#files-header", Static).update("[dim]No attached files[/dim]")
             self.query_one("#files-table", DataTable).display = False
+
+    def action_detail(self) -> None:
+        from .submit import AssignmentDetailScreen
+
+        self.app.push_screen(AssignmentDetailScreen(self.cmid))
+
+    def action_submit(self) -> None:
+        from .submit import SubmitModal
+
+        self.app.push_screen(SubmitModal(self.cmid, self._name), self._submitted)
+
+    def _submitted(self, result: dict | None) -> None:
+        if not result:
+            return
+        if result.get("warnings"):
+            self.notify(str(result["warnings"]), severity="warning")
+        self.notify(f"Submission: {result.get('stage', 'done')}", severity="information")
+        self.action_refresh()
 
     def action_go_back(self) -> None:
         self.app.pop_screen()

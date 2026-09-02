@@ -130,8 +130,18 @@ scele download 222038 -o ./dl     # by resource cmid
 
 scele announcements
 scele subscribe 17474 [--off]
-scele tui                         # interactive terminal UI  (needs the [tui] extra)
 ```
+
+### Interactive TUI
+
+```bash
+scele tui          # needs the [tui] extra: pipx inject scele-cli textual
+```
+
+Same data as the CLI, browsable. `?` shows the keys. Dashboard: `a` announcements,
+`x` deadlines, `c` calendar, `i` notifications; open a course then `i` info, `g` grades,
+`p` people; pick a forum (`n` new, `s` subscribe), assignment (`i` instructions,
+`s` submit), or quiz (`s` start an attempt → answer → save/submit).
 
 ### Watch a command for changes
 

@@ -114,9 +114,8 @@ def course_detail(s: SceleSession, course_id: str) -> CourseDetail:
         raise RequestFailedError(f"course {course_id} not found")
     c = courses[0]
     teachers = [
-        {"name": p.name, "roles": p.roles}
-        for p in people(s, course_id)
-        if {"editingteacher", "teacher", "manager"} & set(p.roles)
+        {"id": str(t.get("id")), "name": clean_html(t.get("fullname"))}
+        for t in (c.get("contacts") or [])
     ]
     return CourseDetail(
         id=str(c.get("id")),

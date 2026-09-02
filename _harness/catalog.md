@@ -46,6 +46,15 @@ SceleCLI/
 | `config.py` | XDG/APPDATA config dir, `token.json` persistence (token only, never the password), `watches_dir()` |
 | `watch.py` | Background watches: canonicalize + git-style unified-diff of a command's JSON output, append-only event log, webhook delivery, POSIX detach/liveness/stop, `clear()` + `prune()`. A watch is deleted when it stops. State under `~/.config/scele/watches/<name>/` |
 
+### `src/scele/tui/` — interactive terminal UI (`scele tui`, needs the `[tui]` extra)
+
+Textual app; every screen calls the same `api.*` functions as the CLI in a worker thread.
+`app.py` (auth gate + themes + vim keys), `screens/` (one file per view — `dashboard`,
+`course`, `forum`, `thread`, `assignment`, `announcements`, `lists` = deadlines/calendar/
+notifications/grades/people, `course_info`, `quiz`, `submit`, `composer`, `download`,
+`login`, `settings`), `widgets/` (`data_screen.TableScreen` base for the list screens,
+`search` filter mixin, `post_view`, `activity_tree`, `course_list`).
+
 ## `tests/`
 
 | File | Coverage |

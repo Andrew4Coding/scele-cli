@@ -124,7 +124,7 @@ def _models() -> dict[str, dict]:
         if key in out:
             out[key]["attachments"] = "{filename: string, filesize: integer, fileurl: string}[]"
     if "CourseDetail" in out:
-        out["CourseDetail"]["teachers"] = "{name: string, roles: string[]}[]"
+        out["CourseDetail"]["teachers"] = "{id: string, name: string}[]"
     if "QuizDetail" in out:
         out["QuizDetail"]["attempts"] = "QuizAttempt[]"
     if "QuizReview" in out:

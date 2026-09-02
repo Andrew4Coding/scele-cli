@@ -1,0 +1,147 @@
+[project]
+site_url = "https://andrew4coding.github.io/scele-cli/"
+site_name = "scele-cli"
+site_description = "scele-cli — command-line client for SCELE, the Moodle of Fakultas Ilmu Komputer, Universitas Indonesia."
+site_author = "Andrew Devito Aryo"
+
+copyright = "Copyright &copy; 2026 Andrew Devito Aryo &middot; MIT License"
+
+repo_url = "https://github.com/Andrew4Coding/scele-cli"
+repo_name = "Andrew4Coding/scele-cli"
+
+nav = [
+  { "Home" = "index.md" },
+  { "Commands" = [
+    { "Overview" = "commands/index.md" },
+    { "Account" = [
+      { "login" = "commands/account/login.md" },
+      { "whoami" = "commands/account/whoami.md" },
+      { "logout" = "commands/account/logout.md" },
+    ] },
+    { "Courses" = [
+      { "courses" = "commands/courses/courses.md" },
+      { "course" = "commands/courses/course.md" },
+      { "course-detail" = "commands/courses/course-detail.md" },
+      { "people" = "commands/courses/people.md" },
+      { "grades" = "commands/courses/grades.md" },
+      { "course-updates" = "commands/courses/course-updates.md" },
+    ] },
+    { "Planning" = [
+      { "deadlines" = "commands/planning/deadlines.md" },
+      { "calendar" = "commands/planning/calendar.md" },
+      { "notifications" = "commands/planning/notifications.md" },
+    ] },
+    { "Catalog" = [
+      { "categories" = "commands/catalog/categories.md" },
+      { "category" = "commands/catalog/category.md" },
+      { "enrol" = "commands/catalog/enrol.md" },
+    ] },
+    { "Forums" = [
+      { "forums" = "commands/forums/forums.md" },
+      { "forum" = "commands/forums/forum.md" },
+      { "thread" = "commands/forums/thread.md" },
+      { "post" = "commands/forums/post.md" },
+      { "reply" = "commands/forums/reply.md" },
+      { "subscribe" = "commands/forums/subscribe.md" },
+    ] },
+    { "Assignments" = [
+      { "assignments" = "commands/assignments/assignments.md" },
+      { "assignment" = "commands/assignments/assignment.md" },
+      { "assignment-detail" = "commands/assignments/assignment-detail.md" },
+      { "submit" = "commands/assignments/submit.md" },
+    ] },
+    { "Files" = [
+      { "resources" = "commands/files/resources.md" },
+      { "download" = "commands/files/download.md" },
+    ] },
+    { "Announcements" = [
+      { "announcements" = "commands/announcements/announcements.md" },
+    ] },
+    { "Tools" = [
+      { "schema" = "commands/tools/schema.md" },
+      { "tui" = "commands/tools/tui.md" },
+      { "watch" = "commands/tools/watch.md" },
+    ] },
+  ] },
+  { "Report an issue" = "report.md" },
+  { "Credits" = "credits.md" },
+]
+
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/extra.js"]
+
+[project.theme]
+# The classic Material layout is what carries the SCELE gold in the header;
+# the "modern" variant keeps its chrome deliberately neutral.
+variant = "classic"
+language = "en"
+features = [
+  "announce.dismiss",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.code.select",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.tabs",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "toc.follow",
+  "toc.integrate",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/Andrew4Coding/scele-cli"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+toc.permalink = true
+pymdownx.betterem = {}
+pymdownx.caret = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.magiclink = {}
+pymdownx.mark = {}
+pymdownx.smartsymbols = {}
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true
+pymdownx.tilde = {}

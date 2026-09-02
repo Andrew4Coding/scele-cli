@@ -54,8 +54,8 @@ function bootstrapBinary() {
 function main() {
   const args = process.argv.slice(2);
 
-  // Allow installing the agent skill via flag: scele --install-skill
-  if (args[0] === "--install-skill" || args[0] === "--skill") {
+  // scele skill [options] -> agent skill installer
+  if (args[0] === "skill" || args[0] === "--skill") {
     const skillScript = join(PKG_ROOT, "bin", "install-skill.mjs");
     const r = spawnSync(process.execPath, [skillScript, ...args.slice(1)], { stdio: "inherit" });
     process.exit(r.status ?? 0);

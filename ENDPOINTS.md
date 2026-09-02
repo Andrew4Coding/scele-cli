@@ -1,52 +1,57 @@
-# SCELE endpoints & page structure
+# SCELE web-service map
 
-Reference for the Moodle endpoints `scele` scrapes and the DOM each parser targets. Derived from
-`../scele_cli_recorder/moodle_capture/clean/`. Base URL: `https://scele.cs.ui.ac.id`. Standard
-Moodle 4.x (theme `classic`). Requests reuse the stored session cookie; state-changing requests
-carry `sesskey` (a per-session token, read from any page's `M.cfg.sesskey` — see `session.sesskey()`).
+`scele` talks to SCELE through the Moodle mobile web-service API. Every request is a
+`POST https://scele.cs.ui.ac.id/webservice/rest/server.php` with `wstoken`,
+`wsfunction`, `moodlewsrestformat=json`, and the function's parameters (nested values
+flattened to `key[0][sub]` by `session._flatten`).
 
-For the CLI surface itself, use `scele schema` or see `AGENTS.md` — not this file.
+The token is minted once: `POST /login/token.php` with `username`, `password`,
+`service=moodle_mobile_app` → `{ "token": "..." }`, verified with
+`core_webservice_get_site_info`.
 
-## Endpoint map
+## Command → web-service function
 
-| Endpoint | Params | Purpose |
-|---|---|---|
-| `GET /login/index.php` | — | login form; needs `logintoken` (hidden, per-request) + `username` + `password`, POST back |
-| `GET /course/index.php` | `categoryid` | list categories / courses in a category |
-| `GET /course/view.php` | `id` | course page: sections, activities, resources |
-| `GET /course/info.php` | `id` | course summary (pre-enrol) |
-| `POST /enrol/index.php` | `id`, `instance`, `sesskey`, `enrolpassword` | self-enrol into a course |
-| `GET /mod/forum/view.php` | `id`, `o` (sort), `forceview` | forum: list of discussions |
-| `GET /mod/forum/discuss.php` | `d`, `parent`, `mode` (display) | one discussion thread + posts |
-| `POST /mod/forum/post.php` | `forum`/`reply`, `subject`, `message[text]`, `sesskey`, `_qf__mod_forum_post_form` | new discussion / reply |
-| `GET /mod/forum/subscribe.php` | `id`, `d`, `sesskey` | (un)subscribe forum or discussion |
-| `GET /mod/assign/view.php` | `id`, `action` (`editsubmission`, `removesubmissionconfirm`) | assignment status / submission |
-| `GET /mod/resource/view.php` | `id`, `forceview` | file resource (redirects to file) |
-| `GET /mod/folder/view.php` | `id` | folder resource listing |
-| `GET /user/view.php` | `id`, `course` | user profile |
-| `GET /pluginfile.php/<ctx>/<component>/<area>/<itemid>/<name>` | `forcedownload=1` | download any attachment/submission file |
-| `POST /course/jumpto.php` | `sesskey`, `jump` | activity "Jump to..." navigation (URL is in `jump`) |
+| Command | Web-service function(s) |
+|---|---|
+| `login` | `POST /login/token.php`, then `core_webservice_get_site_info` |
+| `whoami` | `core_webservice_get_site_info` |
+| `courses` | `core_enrol_get_users_courses` |
+| `course-detail` | `core_course_get_courses_by_field` + `core_enrol_get_enrolled_users` |
+| `course` | `core_course_get_contents` |
+| `people` | `core_enrol_get_enrolled_users` |
+| `grades` | `gradereport_user_get_grade_items` |
+| `course-updates` | `core_course_get_updates_since` |
+| `deadlines` | `core_calendar_get_action_events_by_timesort` |
+| `calendar` | `core_calendar_get_calendar_events` |
+| `notifications` | `core_message_get_notifications` |
+| `categories` | `core_course_get_categories` |
+| `category` | `core_course_get_courses_by_field` (field `category`) |
+| `forums` | `mod_forum_get_forums_by_courses` |
+| `forum` | `mod_forum_get_forum_discussions` → falls back to `..._paginated` |
+| `thread` | `mod_forum_get_discussion_posts` |
+| `assignments` / `assignment-detail` | `mod_assign_get_assignments` |
+| `assignment` | `core_course_get_course_module` + `mod_assign_get_submission_status` |
+| `submit --text` | `mod_assign_save_submission` (+ `mod_assign_submit_for_grading`) |
+| `submit --file` | `core_files_get_unused_draft_itemid` + `POST /webservice/upload.php` + `mod_assign_save_submission` (+ `mod_assign_submit_for_grading`) |
+| `resources` | `core_course_get_contents` (modules `resource` / `folder` / `url`) |
+| `announcements` | `mod_forum_get_forums_by_courses` (course 1, type `news`) + `mod_forum_get_forum_discussions` |
+| `enrol` | `enrol_self_enrol_user` |
+| `subscribe` | `mod_forum_set_subscription_state` |
+| `post` | `mod_forum_add_discussion` |
+| `reply` | `mod_forum_add_discussion_post` |
+| `download` | file URLs from the calls above → `GET /webservice/pluginfile.php/<path>?token=…&forcedownload=1` |
 
-### Course-page component structure (`/course/view.php`)
-- `#region-main` → `h2 "Topic outline"` → `ul > li[id^="section-"]` (one per week/topic)
-  - `h3` section title, then activity list: each activity link is
-    `/mod/<type>/view.php?id=<cmid>` with visible label `"<name> <type>"` (e.g. `… Assignment`, `… Forum`, `… File`).
+## ID conventions
 
-### Assignment status (`/mod/assign/view.php?id=`)
-Table rows: `Submission status`, `Grading status`, `Time remaining`, `Last modified`,
-`File submissions` (→ `pluginfile.php` links), plus `Edit submission` / `Remove submission` actions.
+- **course id** — from `courses` / a `course/view.php?id=<course>` URL.
+- **cmid** (activity/module id) — from `course`; used by `assignment`, `download`.
+- **forum id** — the forum *instance* id from `forums <course>` (not the cmid).
+- **discussion id (d)** — from `forum <id>` → `thread <d>`.
+- **post id** — from `thread <d>` → `reply <post>`.
+- **assignment ref** — instance id *or* cmid from `assignments <course>`; `assignment` takes the cmid.
 
-### Forum thread (`/mod/forum/discuss.php?d=`)
-Each post: author (`name - <NPM>`), timestamp, `Number of replies`, body text, `Permalink`,
-reply link `/mod/forum/post.php?reply=<postid>`. Nested replies live in
-`div.indent[data-region=replies-container]`; a reply's parent id comes from its
-`Show parent` link (`…#p<parentid>`). `parse_discussion` fills `Post.parent` and a
-derived `Post.depth` (0 = discussion starter) so the flat list keeps the reply tree.
+## Notes
 
-### Dashboard (`/` when logged in)
-Announcement blocks: `Pengumuman Akademis` — each item has author, date, body, `Permalink`,
-`Discuss this topic`, reply count.
-
----
-
-Not automated by design: `logout`, `delete`, `unenrol` links.
+- Timestamps arrive as epoch seconds (UTC) and are rendered `YYYY-MM-DD HH:MM WIB`.
+- Message bodies / summaries / feedback arrive as HTML and are flattened to plain text.
+- A `news` forum with no posts legitimately returns `[]`.

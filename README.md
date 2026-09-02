@@ -3,9 +3,13 @@
 Command-line client for **SCELE** (`https://scele.cs.ui.ac.id`), the Moodle instance of
 Fakultas Ilmu Komputer, Universitas Indonesia.
 
-You log in once from the terminal (username + password — SCELE has no CAPTCHA), it saves the
-session cookie, and then talks to SCELE over plain HTTP, parsing the same pages you would read
-in the browser. Your password is sent only to SCELE, over HTTPS, and never written to disk.
+You log in once from the terminal (username + password — SCELE has no CAPTCHA). `scele`
+exchanges them for a **Moodle web-service token** and then talks to SCELE through the
+official mobile web-service API — the same one the Moodle app uses. Your password is sent
+only to SCELE, over HTTPS, and **never written to disk**; only the token is stored.
+
+> `login` needs an account that authenticates with a password (manual / LDAP). An account
+> that only signs in through an external SSO page cannot mint a token.
 
 ## Install
 
@@ -24,7 +28,7 @@ irm https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.p
 ```
 
 Fetches the latest release binary for your OS/arch, verifies its SHA-256, and drops `scele`
-on your `PATH`. Pin a version with `SCELE_VERSION=v0.1.0`, change the location with
+on your `PATH`. Pin a version with `SCELE_VERSION=v0.2.0`, change the location with
 `SCELE_BIN_DIR`. Or grab `scele-<os>-<arch>` straight from the
 [Releases page](https://github.com/Andrew4Coding/scele-cli/releases) and `chmod +x` it.
 
@@ -60,24 +64,20 @@ See [SKILLS.md](SKILLS.md) and [RELEASING.md](RELEASING.md).
 ### Shell completion (optional)
 
 ```bash
-# bash: ~/.bashrc   zsh: ~/.zshrc   (use bash_source / zsh_source accordingly)
+# bash: ~/.bashrc   zsh: ~/.zshrc
 echo 'eval "$(_SCELE_COMPLETE=zsh_source scele)"' >> ~/.zshrc
-```
-
-```powershell
-# PowerShell profile
-$env:_SCELE_COMPLETE = 'powershell_source'; scele | Out-String | Invoke-Expression
 ```
 
 ## Output
 
 Every command prints exactly **one JSON document to stdout** — a list, an object, or for
 actions `{"ok": true, "action": "...", ...}`. Errors print `{"ok": false, "error": "...",
-"message": "..."}` to **stderr** and exit non-zero. Add `-c` / `--compact` (before the
-subcommand) for single-line JSON. There is no human-formatted mode.
+"message": "..."}` to **stderr** and exit non-zero. On a real terminal the default is a
+colored table; when piped or redirected it is plain JSON. Add `-c` / `--compact` (before
+the subcommand) for single-line JSON, or force a format with `-f json|yaml|table`.
 
 `scele schema` prints a machine-readable manifest of every command, its arguments, and its
-return shape — the entry point for scripts and AI agents. See [AGENTS.md](AGENTS.md).
+return shape — the entry point for scripts and AI agents. See [AGENTS.md.bak](AGENTS.md.bak).
 
 ```bash
 scele courses | jq '.[].id'
@@ -90,39 +90,53 @@ scele -c assignment 222043 | jq .fields
 scele login                       # prompts: SCELE username + password (hidden)
 scele whoami
 
-scele courses                     # your dashboard courses
+scele courses                     # courses you are enrolled in
+scele course-detail 4234          # category, dates, teachers, summary
+scele course 4234                 # section / activity outline
+scele people 4234                 # enrolled people + roles
+scele grades 4234                 # your grade items
+scele course-updates 4234         # what changed recently
+
+scele deadlines --days 14         # upcoming deadlines across ALL courses
+scele calendar --days-ahead 30    # calendar events (classes, custom)
+scele notifications               # your SCELE notifications
+
 scele categories [--id 31]        # browse the catalog
 scele category 31                 # courses in a category
-scele course 4234                 # section / activity outline
 
-scele forums 4234                 # forums in a course
-scele forum 221050                # discussions in a forum
-scele thread 62493                # posts in a discussion
-scele post 17474 --subject "..." --message "..."
-scele reply 553756 --message "..."
-scele subscribe 17474 [--discussion 62493]
+scele forums 4234                 # forums in a course  (id = forum instance id)
+scele forum 17474                 # discussions in a forum
+scele thread 62493                # posts in a discussion (nested: parent + depth)
+scele post 17474 --subject "..." --message "..." --yes
+scele reply 553756 --message "..." --yes
 
-scele assignments 4234
-scele assignment 222043           # submission status + files
+scele assignments 4234            # assignments + due dates + grade info
+scele assignment 222043           # your submission status
+scele assignment-detail 222043    # instructions + brief attachments
+scele submit 55010 --text "my answer" --yes
+scele submit 55010 --file ./hw.pdf --yes
+scele submit 55010 --text "wip" --draft --yes
 
-scele resources 4234
+scele resources 4234              # downloadable files (with fileurl)
+scele download "<pluginfile-url>" -o ./dl
 scele download 222038 -o ./dl     # by resource cmid
-scele download /pluginfile.php/... -o ./dl
 
 scele announcements
+scele subscribe 17474 [--off]
+scele tui                         # interactive terminal UI  (needs the [tui] extra)
 ```
 
 ### Watch a command for changes
 
 ```bash
-scele watch assignments 4234 --interval 600 -d      # background; check every 10 min
-scele watch course 4234 --webhook https://hooks.example/x --webhook-header "X-Token: abc"
-scele watch ls                                      # list running watches
-scele watch run algo-hw                             # check once now, print the diff
-scele watch logs algo-hw                            # recorded change / error events
+scele watch deadlines --interval 600 -d              # background; check every 10 min
+scele watch assignment 222043 --webhook https://hooks.example/x --webhook-header "X-Token: abc"
+scele watch ls                                       # list running watches
+scele watch run algo-hw                              # check once now, print the diff
+scele watch logs algo-hw
 scele watch rename algo-hw algorithms
-scele watch rm algorithms                           # stop + delete one
-scele watch clear                                   # stop + delete all
+scele watch rm algorithms                            # stop + delete one
+scele watch clear
 ```
 
 Each check re-runs the command, compares its JSON output, and records a git-style unified
@@ -133,11 +147,12 @@ running: once it stops it is deleted, and `watch ls` prunes any whose process ha
 
 ## Config
 
-- Session cookie:
-  - Linux/macOS: `$XDG_CONFIG_HOME/scele/` or `~/.config/scele/cookies.json`
-  - Windows: `%APPDATA%\scele\cookies.json`
-  - override with `SCELE_CONFIG_DIR`
+- Web-service token:
+  - Linux/macOS: `$XDG_CONFIG_HOME/scele/` or `~/.config/scele/token.json`
+  - Windows: `%APPDATA%\scele\token.json`
+  - override the directory with `SCELE_CONFIG_DIR`
 - `SCELE_BASE_URL` — point at a different Moodle.
+- `SCELE_WS_SERVICE` — web-service short name to mint against (default `moodle_mobile_app`).
 - `SCELE_USERNAME` / `SCELE_PASSWORD` — non-interactive `scele login`.
 
 ## Layout
@@ -145,19 +160,16 @@ running: once it stops it is deleted, and `watch ls` prunes any whose process ha
 ```
 src/scele/
   cli.py        click command surface
-  api.py        high-level operations (one function per command)
-  session.py    authenticated requests.Session + login-redirect detection
-  auth.py       terminal username/password login
-  parsers.py    BeautifulSoup parsers, one per page type
+  api.py        high-level operations (one function per command) over the web-service API
+  session.py    SceleSession — token holder + ws(wsfunction, **params) caller
+  auth.py       terminal login: mint + verify + store a web-service token
+  textutil.py   Moodle-HTML → text, epoch → WIB string / countdown
   models.py     dataclasses
-  output.py     JSON rendering
-  config.py     config-dir + cookie store
+  output.py     table / JSON / YAML rendering
+  config.py     config-dir + token store
   schema.py     `scele schema` manifest
+  watch.py      background command monitoring
 ```
 
-See `ENDPOINTS.md` for the underlying Moodle endpoints and page structure,
-`AGENTS.md` for using `scele` programmatically, and `SKILLS.md` for installing the
-`scele` **Agent Skill** (`npx skills add Andrew4Coding/scele-cli`) so agents know how to use it.
-
-The page-capture tooling used to reverse-engineer SCELE's HTML lives in the sibling
-`../scele_cli_recorder/` and is not needed to run the CLI.
+See `ENDPOINTS.md` for the web-service functions behind each command, `AGENTS.md.bak` for
+using `scele` programmatically, and `SKILLS.md` for installing the `scele` **Agent Skill**.

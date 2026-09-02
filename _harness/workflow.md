@@ -11,12 +11,15 @@ description: Execution flows and procedures
 **Trigger**: User asks to add a new command (e.g. `scele grades`).
 
 **Steps**:
-1. Check `ENDPOINTS.md` for the target Moodle URL and DOM structure. If not documented, inspect the page and document it first.
+1. Find the Moodle web-service function that returns the data (the mobile-app WS allowlist).
+   Add the `command → wsfunction` row to `ENDPOINTS.md`.
 2. Add a dataclass in `src/scele/models.py` with `to_dict()`.
-3. Add a parser function in `src/scele/parsers.py` using defensive helpers (`_text()`, `_body()`, etc.).
-4. Add a test in `tests/test_parsers.py`.
-5. Add an API method in `src/scele/api.py` that calls the session and parser.
-6. Add a Click command in `src/scele/cli.py` with proper options, docstring, and error handling.
+3. Add a function in `src/scele/api.py`: `s.ws("<wsfunction>", ...)` then map the JSON onto the
+   dataclass. Use `textutil.clean_html` for HTML fields and `textutil.wib` / `until` for epochs.
+4. Add a test in `tests/test_api.py` — a `FakeSession` with a canned payload + assertions.
+5. Add a Click command in `src/scele/cli.py` with proper options, docstring, and error handling.
+6. Add `RETURNS` + `EXAMPLES` entries in `src/scele/schema.py`; add a renderer branch in
+   `src/scele/output.py` only if the model needs one (flat models render as a table automatically).
 7. Run `make test` to verify.
 8. Micro-commit each step with conventional commit messages.
 
@@ -37,19 +40,21 @@ description: Execution flows and procedures
    surface changed (`test_schema_manifest` enforces non-empty entries).
 4. Tests: `tests/test_watch.py` (stub `watch.run_command`; never hits the network).
 5. Sync docs: `CLAUDE.md` output-contract note, `AGENTS.md.bak`, `skills/scele/SKILL.md`.
+   `watch._VOLATILE_KEYS` strips keys that change every run (e.g. `token`) before diffing.
 6. Run `make test`. Micro-commit each step.
 
 **Confirmation needed**: No (read-only unless it changes webhook/daemon side-effects).
 
-## 2. Fix a parser bug
+## 2. Fix a data-mapping bug
 
 **Trigger**: A command returns wrong/missing data.
 
 **Steps**:
-1. Check `ENDPOINTS.md` for the expected URL and DOM structure.
-2. If fixtures exist, reproduce with existing test. Otherwise, note the issue.
-3. Fix the parser in `src/scele/parsers.py`.
-4. Update or add tests in `tests/test_parsers.py`.
+1. Check `ENDPOINTS.md` for the web-service function the command calls.
+2. Inspect the real payload: `scele -c <cmd> ...` or a one-off `s.ws("<wsfunction>", ...)`.
+   Moodle WS field names vary by version — handle both when it's cheap (`posts` vs `messages`).
+3. Fix the mapping in `src/scele/api.py` (or a helper in `src/scele/textutil.py`).
+4. Update or add a `FakeSession` case in `tests/test_api.py`.
 5. Run `make test`.
 6. Commit: `fix: <description>`.
 
@@ -85,11 +90,13 @@ description: Execution flows and procedures
 **Trigger**: Login fails or session expires unexpectedly.
 
 **Steps**:
-1. Run `scele whoami` to check current session state.
-2. Check `src/scele/auth.py` for login form parsing.
-3. Check `src/scele/session.py` for redirect interception.
-4. Check `src/scele/config.py` for cookie persistence.
-5. If SCELE's login page HTML changed, update `auth.py` parser.
+1. Run `scele whoami` to check token state + identity.
+2. Check `src/scele/auth.py` — the `/login/token.php` request and its verification call.
+3. Check `src/scele/session.py` — `_REAUTH_CODES` decides which Moodle errorcodes map to
+   `not_authenticated` (re-login) vs `request_failed`.
+4. Check `src/scele/config.py` for `token.json` persistence.
+5. `{"error":"login_failed"}` with a valid password usually means the account authenticates
+   through an external SSO page — `/login/token.php` cannot mint a token for it.
 
 **Confirmation needed**: No (diagnostic). But if a fix changes auth behavior, explain before committing.
 

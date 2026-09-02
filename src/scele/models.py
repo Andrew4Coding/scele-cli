@@ -279,9 +279,13 @@ class QuizQuestion:
     max_mark: str = ""
     flagged: bool = False
     text: str = ""
+    fields: list[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        if not self.fields:
+            d.pop("fields")
+        return d
 
 
 @dataclass
@@ -293,6 +297,19 @@ class QuizReview:
     sumgrades: str = ""
     started: str = ""
     finished: str = ""
+    questions: list[QuizQuestion] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {**asdict(self), "questions": [q.to_dict() for q in self.questions]}
+
+
+@dataclass
+class QuizAttemptPage:
+    attempt_id: str
+    quiz_id: str
+    state: str = ""
+    page: int = 0
+    next_page: int | None = None
     questions: list[QuizQuestion] = field(default_factory=list)
 
     def to_dict(self) -> dict:

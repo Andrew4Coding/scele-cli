@@ -11,7 +11,8 @@ from pathlib import Path
 from .models import (
     Activity, Announcement, AssignmentInfo, AssignmentStatus, CalendarEvent, Category,
     Course, CourseDetail, Deadline, Discussion, Grade, Notification, Person, Post,
-    Quiz, QuizAttempt, QuizDetail, QuizQuestion, QuizReview, Resource, Section,
+    Quiz, QuizAttempt, QuizAttemptPage, QuizDetail, QuizQuestion, QuizReview, Resource,
+    Section,
 )
 from .session import RequestFailedError, SceleSession
 from .textutil import clean_html, duration, until, wib
@@ -598,6 +599,132 @@ def quiz_review(s: SceleSession, attempt_id: str) -> QuizReview:
         finished=wib(att.get("timefinish")),
         questions=questions,
     )
+
+
+# ---------------------------------------------------------------- quiz attempts (writes)
+
+_INPUT_FIELD = re.compile(
+    r'<input\b(?=[^>]*\bname="([^"]+)")(?=[^>]*\bvalue="([^"]*)")'
+    r'(?:[^>]*\btype="([^"]*)")?[^>]*>', re.I)
+_TEXTAREA_FIELD = re.compile(r'<textarea\b[^>]*\bname="([^"]+)"[^>]*>(.*?)</textarea>', re.I | re.S)
+_SELECTED_OPTION = re.compile(
+    r'<select\b[^>]*\bname="([^"]+)"[^>]*>(.*?)</select>', re.I | re.S)
+_OPTION_SELECTED = re.compile(r'<option\b[^>]*\bselected\b[^>]*\bvalue="([^"]*)"', re.I)
+
+
+def _question_form_fields(html: str) -> list[dict]:
+    """Every submittable form field in a question's review/attempt HTML."""
+    out: list[dict] = []
+    seen: set[str] = set()
+
+    def add(name: str, value: str, kind: str = "") -> None:
+        if not name or name in seen:
+            return
+        seen.add(name)
+        out.append({"name": name, "value": value, "type": kind} if kind
+                   else {"name": name, "value": value})
+
+    for name, value, kind in _INPUT_FIELD.findall(html or ""):
+        if kind.lower() in ("submit", "button", "image"):
+            continue
+        add(name, value, kind.lower())
+    for name, body in _TEXTAREA_FIELD.findall(html or ""):
+        add(name, clean_html(body))
+    for name, body in _SELECTED_OPTION.findall(html or ""):
+        m = _OPTION_SELECTED.search(body)
+        add(name, m.group(1) if m else "")
+    return out
+
+
+def _scaffold_fields(html: str) -> list[dict]:
+    """Only the mechanical hidden fields (``:sequencecheck`` etc.) a resubmit must echo."""
+    return [f for f in _question_form_fields(html)
+            if f["name"].endswith("_:sequencecheck") or f["name"].endswith("_:flagged")
+            or f["name"].endswith("_:minfraction") or f["name"].endswith("_:maxfraction")]
+
+
+def _preflight(password: str) -> list[dict]:
+    return [{"name": "quizpassword", "value": password}] if password else []
+
+
+def quiz_start(s: SceleSession, cmid: str, password: str = "",
+               force_new: bool = False) -> dict:
+    """Start a new attempt at a quiz (by cmid). Returns the new attempt id + state."""
+    quiz_id = int(_course_module(s, cmid).get("instance"))
+    resp = s.ws("mod_quiz_start_attempt", quizid=quiz_id,
+                preflightdata=_preflight(password), forcenew=force_new) or {}
+    att = resp.get("attempt") or {}
+    return {
+        "ok": not resp.get("warnings"),
+        "attempt_id": str(att.get("id") or ""),
+        "attempt_number": att.get("attempt"),
+        "state": att.get("state") or "",
+        "quiz_id": str(quiz_id),
+        "warnings": resp.get("warnings") or [],
+    }
+
+
+def quiz_attempt_page(s: SceleSession, attempt_id: str, page: int = 0,
+                      password: str = "") -> QuizAttemptPage:
+    """Read an in-progress attempt page: each question's text + its form fields."""
+    data = s.ws("mod_quiz_get_attempt_data", attemptid=int(attempt_id), page=int(page),
+                preflightdata=_preflight(password)) or {}
+    att = data.get("attempt") or {}
+    questions = []
+    for q in data.get("questions") or []:
+        html = q.get("html") or ""
+        questions.append(QuizQuestion(
+            number=q.get("number") or q.get("slot") or 0,
+            slot=q.get("slot") or 0,
+            type=q.get("type") or "",
+            status=q.get("status") or q.get("state") or "",
+            max_mark=str(q.get("maxmark")) if q.get("maxmark") is not None else "",
+            flagged=bool(q.get("flagged")),
+            text=clean_html(html, 1500),
+            fields=_question_form_fields(html),
+        ))
+    nxt = data.get("nextpage")
+    return QuizAttemptPage(
+        attempt_id=str(attempt_id),
+        quiz_id=str(att.get("quiz") or ""),
+        state=att.get("state") or "",
+        page=int(page),
+        next_page=nxt if isinstance(nxt, int) and nxt >= 0 else None,
+        questions=questions,
+    )
+
+
+def quiz_answer(s: SceleSession, attempt_id: str, answers: dict[str, str],
+                finish: bool = False, page: int = 0, password: str = "") -> dict:
+    """Save answers to an in-progress attempt (``mod_quiz_process_attempt``).
+
+    ``answers`` maps raw Moodle field names (from ``quiz-attempt``) to values. The
+    mechanical ``:sequencecheck`` / ``:flagged`` hidden fields for the questions on
+    this page are echoed automatically. With ``finish=True`` the attempt is submitted
+    for grading — irreversible.
+    """
+    aid = int(attempt_id)
+    current = s.ws("mod_quiz_get_attempt_data", attemptid=aid, page=int(page),
+                   preflightdata=_preflight(password)) or {}
+    scaffold: list[dict] = []
+    for q in current.get("questions") or []:
+        scaffold.extend(_scaffold_fields(q.get("html") or ""))
+    payload = {f["name"]: f["value"] for f in scaffold}
+    payload.update({str(k): str(v) for k, v in answers.items()})
+    data = [{"name": n, "value": v} for n, v in payload.items()]
+    resp = s.ws("mod_quiz_process_attempt", attemptid=aid, data=data,
+                finishattempt=1 if finish else 0, timeup=0,
+                preflightdata=_preflight(password)) or {}
+    state = resp.get("state", "") if isinstance(resp, dict) else str(resp)
+    warnings = resp.get("warnings") if isinstance(resp, dict) else []
+    return {
+        "ok": not warnings,
+        "attempt_id": str(attempt_id),
+        "state": state,
+        "finished": state == "finished",
+        "sent_fields": sorted(payload),
+        "warnings": warnings or [],
+    }
 
 
 def course_updates(s: SceleSession, course_id: str, since_days: int = 7) -> dict:

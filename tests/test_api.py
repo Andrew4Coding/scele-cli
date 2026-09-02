@@ -7,7 +7,7 @@ A FakeSession returns canned JSON per wsfunction — no network, no token.
 from scele import api
 from scele.models import (
     AssignmentStatus, CalendarEvent, Deadline, Discussion, Grade, Notification, Person,
-    Post, Quiz, QuizDetail, QuizReview,
+    Post, Quiz, QuizAttemptPage, QuizDetail, QuizReview,
 )
 from scele.session import RequestFailedError
 
@@ -221,6 +221,56 @@ def test_quiz_review_extracts_marks_and_submitted_answer():
     assert q.status == "Correct" and q.mark == "10.00" and q.max_mark == "10"
     assert "Your answer: 0.862" in q.text
     assert "correct answer is: 0.909" in q.text
+
+
+_Q_HTML = (
+    '<div class="que numerical"><div class="qtext"><p>Compute F1</p></div>'
+    '<input type="hidden" name="q42:1_:sequencecheck" value="1">'
+    '<input type="text" name="q42:1_answer" value="">'
+    '<input type="hidden" name="q42:1_:flagged" value="0"></div>'
+)
+
+
+def test_quiz_start_returns_new_attempt():
+    s = FakeSession({
+        "core_course_get_course_module": {"cm": {"instance": 8228}},
+        "mod_quiz_start_attempt": {"attempt": {"id": 999, "attempt": 2, "state": "inprogress"},
+                                   "warnings": []},
+    })
+    out = api.quiz_start(s, "188689", password="secret")
+    assert out["attempt_id"] == "999" and out["state"] == "inprogress" and out["ok"]
+    call = dict(s.calls[-1][1])
+    assert call["forcenew"] is False
+    assert call["preflightdata"] == [{"name": "quizpassword", "value": "secret"}]
+
+
+def test_quiz_attempt_page_exposes_form_fields():
+    s = FakeSession({
+        "mod_quiz_get_attempt_data": {
+            "attempt": {"quiz": 8228, "state": "inprogress"},
+            "nextpage": -1,
+            "questions": [{"slot": 1, "number": 1, "type": "numerical",
+                           "status": "Not yet answered", "maxmark": 10, "html": _Q_HTML}],
+        },
+    })
+    page = api.quiz_attempt_page(s, "999")
+    assert isinstance(page, QuizAttemptPage) and page.next_page is None
+    names = [f["name"] for f in page.questions[0].fields]
+    assert "q42:1_answer" in names and "q42:1_:sequencecheck" in names
+
+
+def test_quiz_answer_merges_scaffold_and_can_finish():
+    s = FakeSession({
+        "mod_quiz_get_attempt_data": {"questions": [{"html": _Q_HTML}]},
+        "mod_quiz_process_attempt": {"state": "finished", "warnings": []},
+    })
+    out = api.quiz_answer(s, "999", {"q42:1_answer": "0.909"}, finish=True)
+    assert out["state"] == "finished" and out["finished"] is True
+    sent = {f["name"]: f["value"]
+            for f in dict(s.calls[-1][1])["data"]}
+    assert sent["q42:1_answer"] == "0.909"
+    assert sent["q42:1_:sequencecheck"] == "1"  # echoed automatically
+    assert dict(s.calls[-1][1])["finishattempt"] == 1
 
 
 def test_forum_reply_passes_subject_when_given():

@@ -64,12 +64,13 @@ Read-only: `courses`, `course-detail <id>`, `people <id>`, `grades <id>`,
 `course-updates <id>`, `deadlines`, `calendar`, `notifications`, `categories [--id N]`,
 `category <id>`, `course <id>`, `forums <id>`, `forum <id> [--limit N]`, `thread <d>`,
 `assignments <id>`, `assignment <cmid>`, `assignment-detail <ref>`,
-`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `resources <id>`, `announcements`.
+`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `quiz-attempt <attempt>`, `resources <id>`, `announcements`.
 
 Writes (ask the human first; `post`/`reply`/`submit` also need `--yes` to skip their prompt):
 `enrol <course> [--key K]`, `subscribe <forum> [--off]`,
 `post <forum> --subject S --message M --yes`, `reply <post> --message M [--subject S] --yes`,
 `submit <ref> (--text T | --file PATH) [--draft] --yes`,
+`quiz-start <cmid> [--password P] [--force] --yes`, `quiz-answer <attempt> [--set NAME=VALUE ...] [--finish] --yes`,
 `download <cmid|pluginfile-url> [-o dir]`.
 
 Watch (background monitoring): `watch <cmd...> [--interval N] [--webhook URL]

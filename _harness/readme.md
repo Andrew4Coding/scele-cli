@@ -91,7 +91,7 @@ scele thread <d>              → posts w/ id + parent
 `course-updates <id>`, `deadlines`, `calendar`, `notifications`, `categories [--id N]`,
 `category <id>`, `course <id>`, `forums <id>`, `forum <id>`, `thread <d>`,
 `assignments <id>`, `assignment <cmid>`, `assignment-detail <ref>`,
-`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `resources <id>`, `announcements`.
+`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `quiz-attempt <attempt>`, `resources <id>`, `announcements`.
 
 **Writes** (ask the human first; `post`/`reply`/`submit` also need `--yes`): `enrol`,
 `subscribe`, `post`, `reply`, `submit`, `download`.

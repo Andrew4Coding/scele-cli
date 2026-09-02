@@ -17,7 +17,8 @@ import click
 from .models import (
     Activity, Announcement, AssignmentInfo, AssignmentStatus, CalendarEvent, Category,
     Course, CourseDetail, Deadline, Discussion, Grade, Notification, Person, Post,
-    Quiz, QuizAttempt, QuizDetail, QuizQuestion, QuizReview, Resource, Section,
+    Quiz, QuizAttempt, QuizAttemptPage, QuizDetail, QuizQuestion, QuizReview, Resource,
+    Section,
 )
 
 _FLAT_MODELS = (
@@ -289,10 +290,13 @@ def _assignment(a: AssignmentStatus) -> None:
                        + click.style(f.get("url", ""), dim=True))
 
 
-def _quiz_review(r: QuizReview) -> None:
+def _quiz_review(r) -> None:
     _echo(click.style(f"Attempt {r.attempt_id}  ({r.state})", bold=True, fg="cyan"))
-    head = {k: v for k, v in (("grade", r.grade), ("sumgrades", r.sumgrades),
-                              ("started", r.started), ("finished", r.finished)) if v}
+    head = {k: v for k, v in (
+        ("grade", getattr(r, "grade", "")), ("sumgrades", getattr(r, "sumgrades", "")),
+        ("started", getattr(r, "started", "")), ("finished", getattr(r, "finished", "")),
+        ("page", getattr(r, "page", None)), ("next_page", getattr(r, "next_page", None)),
+    ) if v not in ("", None)}
     if head:
         _kv(head)
     _echo()
@@ -303,9 +307,12 @@ def _quiz_review(r: QuizReview) -> None:
         for line in (q.text or "").splitlines():
             if line.strip():
                 _echo("   " + line)
+        if q.fields:
+            _echo("   " + click.style("fields: " + ", ".join(f["name"] for f in q.fields),
+                                      dim=True))
         _echo()
     if not r.questions:
-        _echo(click.style("(no questions in this review)", dim=True))
+        _echo(click.style("(no questions)", dim=True))
 
 
 def _render(obj) -> None:
@@ -317,7 +324,7 @@ def _render(obj) -> None:
         _announcements(obj)
     elif isinstance(obj, AssignmentStatus):
         _assignment(obj)
-    elif isinstance(obj, QuizReview):
+    elif isinstance(obj, (QuizReview, QuizAttemptPage)):
         _quiz_review(obj)
     elif isinstance(obj, QuizDetail):
         d = _plain(obj)

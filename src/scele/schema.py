@@ -34,6 +34,9 @@ RETURNS: dict[str, str] = {
     "quizzes": "Quiz[]",
     "quiz": "QuizDetail",
     "quiz-review": "QuizReview",
+    "quiz-start": "ActionResult & {attempt_id: string, state: string, warnings: object[]}",
+    "quiz-attempt": "QuizAttemptPage",
+    "quiz-answer": "ActionResult & {state: string, finished: bool, warnings: object[]}",
     "resources": "Resource[]",
     "announcements": "Announcement[]",
     "enrol": "ActionResult",
@@ -76,6 +79,9 @@ EXAMPLES: dict[str, str] = {
     "quizzes": "scele quizzes 3930",
     "quiz": "scele quiz 189006",
     "quiz-review": "scele quiz-review 459484",
+    "quiz-start": "scele quiz-start 189006 --yes",
+    "quiz-attempt": "scele quiz-attempt 459484 --page 0",
+    "quiz-answer": "scele quiz-answer 459484 --set 'q123:1_answer=0.909' --finish --yes",
     "resources": "scele resources 4234",
     "announcements": "scele announcements",
     "enrol": "scele enrol 4128 --key secret",
@@ -123,6 +129,10 @@ def _models() -> dict[str, dict]:
         out["QuizDetail"]["attempts"] = "QuizAttempt[]"
     if "QuizReview" in out:
         out["QuizReview"]["questions"] = "QuizQuestion[]"
+    if "QuizAttemptPage" in out:
+        out["QuizAttemptPage"]["questions"] = "QuizQuestion[]"
+    if "QuizQuestion" in out:
+        out["QuizQuestion"]["fields"] = "{name: string, value: string, type?: string}[]"
     out["ActionResult"] = {"ok": "boolean", "action": "string", "...": "command-specific fields"}
     return out
 
@@ -183,7 +193,10 @@ def build(group) -> dict:
             "post id": "from `scele thread <d>` -> `scele reply <post>`",
             "assignment ref": "instance id or cmid from `scele assignments <course>`",
             "quiz cmid": "from `scele quizzes <course>` / `scele course <course>` -> `scele quiz <cmid>`",
-            "quiz attempt id": "from `scele quiz <cmid>` -> `scele quiz-review <attempt>`",
+            "quiz attempt id": "from `scele quiz <cmid>` / `scele quiz-start` -> "
+                               "`scele quiz-review|quiz-attempt|quiz-answer <attempt>`",
+            "quiz field name": "raw Moodle form field from `scele quiz-attempt` "
+                               "(e.g. `q<uniqueid>:<slot>_answer`) -> `scele quiz-answer --set`",
         },
         "commands": commands,
         "models": _models(),

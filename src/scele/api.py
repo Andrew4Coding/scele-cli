@@ -420,39 +420,61 @@ def deadlines(s: SceleSession, days: int = 14, limit: int = 25) -> list[Deadline
     return out
 
 
+def _month_range(start: int, end: int) -> list[tuple[int, int]]:
+    """(year, month) pairs covering the window [start, end] (epoch seconds)."""
+    lo = time.gmtime(start)
+    hi = time.gmtime(end)
+    y, m = lo.tm_year, lo.tm_mon
+    months = []
+    while (y, m) <= (hi.tm_year, hi.tm_mon):
+        months.append((y, m))
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    return months
+
+
 def calendar(s: SceleSession, days_back: int = 7, days_ahead: int = 30) -> list[CalendarEvent]:
-    """Return all calendar events from N days back to M days ahead."""
+    """Return calendar events from N days back to M days ahead (all event types)."""
     now = int(time.time())
-    data = s.ws("core_calendar_get_calendar_events",
-                options={"timestartfrom": now - int(days_back) * 86400,
-                         "timestartto": now + int(days_ahead) * 86400,
-                         "userevents": 1, "siteevents": 1}) or {}
-    out = []
-    for e in data.get("events") or []:
-        out.append(CalendarEvent(
-            id=str(e.get("id")),
-            name=e.get("name") or "",
-            when=wib(e.get("timestart")),
-            type=e.get("eventtype") or "",
-            course_id=str((e.get("course") or {}).get("id") or e.get("courseid") or ""),
-            description=clean_html(e.get("description"), 400),
-        ))
+    start, end = now - int(days_back) * 86400, now + int(days_ahead) * 86400
+    seen: set[str] = set()
+    out: list[CalendarEvent] = []
+    for year, month in _month_range(start, end):
+        view = s.ws("core_calendar_get_calendar_monthly_view", year=year, month=month,
+                    courseid=1, categoryid=0, includenavigation=0, mini=1) or {}
+        for week in view.get("weeks") or []:
+            for day in week.get("days") or []:
+                for e in day.get("events") or []:
+                    ts = e.get("timesort") or e.get("timestart") or 0
+                    eid = str(e.get("id"))
+                    if eid in seen or not (start <= ts <= end):
+                        continue
+                    seen.add(eid)
+                    out.append(CalendarEvent(
+                        id=eid,
+                        name=clean_html(e.get("name")),
+                        when=wib(ts),
+                        type=e.get("normalisedeventtypetext") or e.get("eventtype") or "",
+                        course_id=str((e.get("course") or {}).get("id")
+                                      or e.get("courseid") or ""),
+                        description=clean_html(e.get("description"), 400),
+                    ))
+    out.sort(key=lambda e: e.when)
     return out
 
 
 def notifications(s: SceleSession, limit: int = 20) -> list[Notification]:
-    """Return the user's recent SCELE notifications."""
-    data = s.ws("core_message_get_notifications", useridto=s.userid(),
-                limitnum=min(max(int(limit), 1), 50)) or {}
+    """Return the user's recent SCELE notifications (popup/notification feed)."""
+    data = s.ws("message_popup_get_popup_notifications", useridto=s.userid(),
+                newestfirst=1, limit=min(max(int(limit), 1), 50), offset=0) or {}
     out = []
     for n in data.get("notifications") or []:
-        frm = n.get("from") if isinstance(n.get("from"), dict) else None
         out.append(Notification(
             id=str(n.get("id")),
-            subject=n.get("subject") or "",
-            sender=(frm.get("fullname") if frm else n.get("userfromfullname")) or "",
+            subject=clean_html(n.get("subject")),
+            sender=n.get("component") or "",
             time=wib(n.get("timecreated")),
-            text=clean_html(n.get("fullmessagehtml") or n.get("fullmessage"), 400),
+            text=clean_html(n.get("fullmessagehtml") or n.get("smallmessage")
+                            or n.get("text"), 400),
             read=bool(n.get("read")),
         ))
     return out

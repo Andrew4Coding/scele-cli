@@ -22,8 +22,8 @@ The token is minted once: `POST /login/token.php` with `username`, `password`,
 | `grades` | `gradereport_user_get_grade_items` |
 | `course-updates` | `core_course_get_updates_since` |
 | `deadlines` | `core_calendar_get_action_events_by_timesort` |
-| `calendar` | `core_calendar_get_calendar_events` |
-| `notifications` | `core_message_get_notifications` |
+| `calendar` | `core_calendar_get_calendar_monthly_view` (one call per month in the window, flattened) |
+| `notifications` | `message_popup_get_popup_notifications` |
 | `categories` | `core_course_get_categories` |
 | `category` | `core_course_get_courses_by_field` (field `category`) |
 | `forums` | `mod_forum_get_forums_by_courses` |

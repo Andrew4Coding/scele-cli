@@ -4,6 +4,8 @@ A FakeSession returns canned JSON per wsfunction — no network, no token.
 """
 
 
+import time
+
 from scele import api
 from scele.models import (
     AssignmentStatus, CalendarEvent, Deadline, Discussion, Grade, Notification, Person,
@@ -101,28 +103,45 @@ def test_grades_maps_items():
                          graded=out[0].graded)]
 
 
-def test_deadlines_and_calendar_and_notifications_shapes():
+def test_deadlines_maps_action_events():
     s = FakeSession({
         "core_calendar_get_action_events_by_timesort": {"events": [
             {"name": "HW due", "timesort": 4102444800, "url": "https://x",
              "course": {"shortname": "DDP2", "id": 2},
              "normalisedeventtypetext": "Assignment"},
         ]},
-        "core_calendar_get_calendar_events": {"events": [
-            {"id": 7, "name": "Lecture", "timestart": 4102444800, "eventtype": "course",
-             "course": {"id": 2}, "description": "<p>room A</p>"},
+    })
+    out = api.deadlines(s)
+    assert isinstance(out[0], Deadline) and out[0].course == "DDP2"
+
+
+def test_calendar_flattens_monthly_view_and_filters_window():
+    now = int(time.time())
+    soon, later = now + 3 * 86400, now + 999 * 86400
+    view = {"weeks": [{"days": [
+        {"events": [
+            {"id": 7, "name": "Lecture", "timesort": soon, "eventtype": "course",
+             "normalisedeventtypetext": "Course event", "course": {"id": 2},
+             "description": "<p>room A</p>"},
+            {"id": 8, "name": "Way off", "timesort": later, "course": {"id": 2}},
         ]},
-        "core_message_get_notifications": {"notifications": [
-            {"id": 5, "subject": "Graded", "from": {"fullname": "Grader"},
+    ]}]}
+    s = FakeSession({"core_calendar_get_calendar_monthly_view": view})
+    out = api.calendar(s, days_back=0, days_ahead=30)
+    assert [e.id for e in out] == ["7"]  # id 8 is outside the window
+    assert isinstance(out[0], CalendarEvent) and out[0].description == "room A"
+
+
+def test_notifications_maps_popup_feed():
+    s = FakeSession({
+        "message_popup_get_popup_notifications": {"notifications": [
+            {"id": 5, "subject": "SECTION A &amp; B graded", "component": "mod_assign",
              "timecreated": 0, "fullmessagehtml": "<p>done</p>", "read": True},
         ]},
     })
-    assert isinstance(api.deadlines(s)[0], Deadline)
-    assert api.deadlines(s)[0].course == "DDP2"
-    assert isinstance(api.calendar(s)[0], CalendarEvent)
-    assert api.calendar(s)[0].description == "room A"
     n = api.notifications(s)[0]
     assert isinstance(n, Notification) and n.read is True and n.text == "done"
+    assert n.sender == "mod_assign" and n.subject == "SECTION A & B graded"
 
 
 def test_people_maps_roles():

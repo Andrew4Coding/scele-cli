@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Command-line client for SCELE (Moodle) at Fasilkom UI"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = { file = "LICENSE.md" }
 keywords = ["scele", "moodle", "cli", "fasilkom", "ui"]
 classifiers = [
     "Environment :: Console",

@@ -14,7 +14,8 @@
     "install.sh",
     "install.ps1",
     "SKILLS.md",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "engines": {
     "node": ">=16"

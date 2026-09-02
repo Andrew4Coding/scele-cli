@@ -164,3 +164,7 @@ src/scele/
 
 See `ENDPOINTS.md` for the web-service functions behind each command, `AGENTS.md.bak` for
 using `scele` programmatically, and `SKILLS.md` for installing the `scele` **Agent Skill**.
+
+## License
+
+MIT — see [LICENSE.md](LICENSE.md).

@@ -3,14 +3,6 @@
 Command-line client for **SCELE** (`https://scele.cs.ui.ac.id`), the Moodle instance of
 Fakultas Ilmu Komputer, Universitas Indonesia.
 
-You log in once from the terminal (username + password — SCELE has no CAPTCHA). `scele`
-exchanges them for a **Moodle web-service token** and then talks to SCELE through the
-official mobile web-service API — the same one the Moodle app uses. Your password is sent
-only to SCELE, over HTTPS, and **never written to disk**; only the token is stored.
-
-> `login` needs an account that authenticates with a password (manual / LDAP). An account
-> that only signs in through an external SSO page cannot mint a token.
-
 ## Install
 
 ### Prebuilt binary — no Python needed (recommended)
@@ -33,9 +25,6 @@ Pin a version with `SCELE_VERSION=v0.2.0`; change locations with `SCELE_BIN_DIR`
 `SCELE_APP_DIR`. Or download the archive from the
 [Releases page](https://github.com/Andrew4Coding/scele-cli/releases), unpack it, and run
 `scele/scele`.
-
-> The bundle is a directory, not a single file (it starts ~40× faster than a onefile
-> binary). No prebuilt bundle for your platform? Use pipx below.
 
 Then open a new terminal:
 
@@ -61,7 +50,7 @@ git clone https://github.com/Andrew4Coding/scele-cli.git && cd scele-cli
 ### As an agent skill
 
 ```bash
-npx skills add Andrew4Coding/scele-cli     # installs skills/scele/SKILL.md for your agent
+npx skills add Andrew4Coding/scele-cli     
 ```
 
 See [SKILLS.md](SKILLS.md) and [RELEASING.md](RELEASING.md).
@@ -69,24 +58,7 @@ See [SKILLS.md](SKILLS.md) and [RELEASING.md](RELEASING.md).
 ### Shell completion (optional)
 
 ```bash
-# bash: ~/.bashrc   zsh: ~/.zshrc
 echo 'eval "$(_SCELE_COMPLETE=zsh_source scele)"' >> ~/.zshrc
-```
-
-## Output
-
-Every command prints exactly **one JSON document to stdout** — a list, an object, or for
-actions `{"ok": true, "action": "...", ...}`. Errors print `{"ok": false, "error": "...",
-"message": "..."}` to **stderr** and exit non-zero. On a real terminal the default is a
-colored table; when piped or redirected it is plain JSON. Add `-c` / `--compact` (before
-the subcommand) for single-line JSON, or force a format with `-f json|yaml|table`.
-
-`scele schema` prints a machine-readable manifest of every command, its arguments, and its
-return shape — the entry point for scripts and AI agents. See [AGENTS.md.bak](AGENTS.md.bak).
-
-```bash
-scele courses | jq '.[].id'
-scele -c assignment 222043 | jq .fields
 ```
 
 ## Usage
@@ -144,10 +116,6 @@ scele subscribe 17474 [--off]
 scele tui          # needs the [tui] extra: pipx inject scele-cli textual
 ```
 
-Same data as the CLI, browsable. `?` shows the keys. Dashboard: `a` announcements,
-`x` deadlines, `c` calendar, `i` notifications; open a course then `i` info, `g` grades,
-`p` people; pick a forum (`n` new, `s` subscribe), assignment (`i` instructions,
-`s` submit), or quiz (`s` start an attempt → answer → save/submit).
 
 ### Watch a command for changes
 

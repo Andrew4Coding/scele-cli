@@ -53,17 +53,17 @@ git clone https://github.com/Andrew4Coding/scele-cli.git && cd scele-cli
 npm install -g scele-cli
 ```
 
-As a CLI tool, `-g` installs it globally onto your `PATH`. Then run:
+Installs the `scele` CLI command globally onto your `PATH`. Then run:
 
 ```bash
-scele-cli --with-cli      # install both the agent skill and the scele CLI
-scele-cli                 # or just the agent skill (~/.claude/skills/scele/)
+scele login
+scele courses
 ```
 
-Or run directly without global installation using `npx`:
+Or run directly without installing via `npx`:
 
 ```bash
-npx scele-cli --with-cli
+npx scele-cli courses
 ```
 
 ### As an agent skill

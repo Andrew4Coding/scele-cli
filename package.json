@@ -5,7 +5,8 @@
   "type": "module",
   "preferGlobal": true,
   "bin": {
-    "scele-cli": "bin/install-skill.mjs",
+    "scele": "bin/scele.mjs",
+    "scele-cli": "bin/scele.mjs",
     "scele-skill": "bin/install-skill.mjs"
   },
   "files": [

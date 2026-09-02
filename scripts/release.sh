@@ -26,6 +26,21 @@ open(path, "w").write(text)
 PY
 
 git add "$INIT"
+
+if [ -f "package.json" ]; then
+    python3 - "$VERSION" <<'PY'
+import json, sys
+version = sys.argv[1]
+with open("package.json", "r") as f:
+    pkg = json.load(f)
+pkg["version"] = version
+with open("package.json", "w") as f:
+    json.dump(pkg, f, indent=2)
+    f.write("\n")
+PY
+    git add package.json
+fi
+
 git commit -m "release: v$VERSION"
 git tag -a "v$VERSION" -m "v$VERSION"
 

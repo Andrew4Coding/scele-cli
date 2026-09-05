@@ -45,6 +45,9 @@
 - Packaging: switched the prebuilt binary from PyInstaller onefile to `--onedir`
   (commits f16b092, 62c9882, 13d5f4c); `install-bin.sh`/`.ps1` unpack the tarball
   bundle and README documents it.
+- Installer UX: modernized all four installation scripts (`install-bin.sh`, `install.sh`,
+  `install-bin.ps1`, `install.ps1`) with Slant ASCII branding banner, progress/spinner
+  animations, step indicators, error capturing, and quick-start onboarding summary cards.
 
 ## `watch` design notes
 

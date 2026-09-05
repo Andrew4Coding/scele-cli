@@ -176,7 +176,7 @@ class SceleApp(App):
             "Dashboard: a Announcements · x Deadlines · c Calendar · i Notifications\n"
             "Course: i Info · g Grades · p People\n"
             "Assignment: i Instructions · s Submit    Forum: n New · s Subscribe\n"
-            "Quiz: s Start attempt    Thread: n Reply\n"
+            "Thread: n Reply\n"
             + vim_hint,
             title="Help",
             timeout=8,

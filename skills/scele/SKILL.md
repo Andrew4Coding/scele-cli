@@ -74,7 +74,6 @@ Read-only: `courses`, `course-detail <id>`, `people <id>`, `grades <id>`,
 `course-updates <id>`, `deadlines`, `calendar`, `notifications`, `categories [--id N]`,
 `category <id>`, `course <id>`, `forums <id>`, `forum <id> [--limit N]`, `thread <d>`,
 `assignments <id>`, `assignment <cmid>`, `assignment-detail <ref>`,
-`quizzes <id>`, `quiz <cmid>`, `quiz-review <attempt>`, `quiz-attempt <attempt>`,
 `resources <id>`, `announcements`, `schema`, `whoami`, `logout`.
 
 `scele tui` launches an interactive terminal UI over the same data (needs the `[tui]`
@@ -84,8 +83,6 @@ Writes — confirm with the user first; `post`/`reply`/`submit` also need `--yes
 `enrol <course> [--key K]`, `subscribe <forum> [--off]`,
 `post <forum> --subject S --message M --yes`, `reply <post> --message M [--subject S] --yes`,
 `submit <ref> (--text T | --file PATH) [--draft] --yes`,
-`quiz-start <cmid> [--password P] [--force] --yes`,
-`quiz-answer <attempt> [--set NAME=VALUE ...] [--finish] --yes` (read field names first with `quiz-attempt <attempt>`),
 `download <cmid|pluginfile-url> [-o dir]`.
 
 Watch — re-run any command on an interval and report exact line-level output changes:
@@ -112,8 +109,6 @@ scele -c thread 62493 | jq -r '.[] | "\(.depth * "  ")\(.author): \(.body)"'
 
 - Dates render as `YYYY-MM-DD HH:MM WIB`; HTML bodies are flattened to plain text.
 - `thread` posts carry `parent` and `depth` (0 = discussion starter) — reply to the exact post.
-- `quiz-start` uses one of your allowed attempts; `quiz-answer --finish` submits for grading — both irreversible, both need `--yes`.
-- To answer a quiz: `quiz-start` → `quiz-attempt` (read the `fields` per question) → `quiz-answer --set` for each field → `--finish` when done.
 - A `news` forum with no posts legitimately returns `[]`.
 - `forum` / `announcements` accept `--limit`; `thread` returns the whole thread.
 - Never pass credentials on the command line; use the prompt or the env vars.

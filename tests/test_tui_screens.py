@@ -12,15 +12,11 @@ from textual.containers import VerticalScroll
 from textual.widgets import DataTable, Footer, Header
 
 from scele import api
-from scele.models import (
-    AssignmentInfo, Deadline, Grade, Notification, Person, QuizAttempt, QuizDetail,
-    QuizQuestion, QuizReview,
-)
+from scele.models import AssignmentInfo, Deadline, Grade, Notification, Person
 from scele.tui.screens.course_info import CourseInfoScreen
 from scele.tui.screens.lists import (
     DeadlinesScreen, GradesScreen, NotificationsScreen, PeopleScreen,
 )
-from scele.tui.screens.quiz import QuizReviewScreen, QuizScreen
 from scele.tui.screens.submit import AssignmentDetailScreen
 
 
@@ -66,7 +62,7 @@ def test_deadlines_screen_lists_rows(monkeypatch):
 
 def test_grades_and_people_and_notifications_screens(monkeypatch):
     monkeypatch.setattr(api, "grades", lambda s, cid: [
-        Grade(item="Quiz 1", grade="88", range="0–100", percentage="88 %")])
+        Grade(item="Midterm", grade="88", range="0–100", percentage="88 %")])
     monkeypatch.setattr(api, "people", lambda s, cid: [
         Person(id="1", name="Dr Yugo", roles=["editingteacher"], email="y@x")])
     monkeypatch.setattr(api, "notifications", lambda s, limit=40: [
@@ -102,34 +98,6 @@ def test_course_info_screen(monkeypatch):
             app.push_screen(CourseInfoScreen("4234"))
             body = lambda: app.screen.query_one("#course-info-body", VerticalScroll)
             await _settle(pilot, lambda: not body().loading)
-            assert len(body().children) == 2
-
-    _run(go())
-
-
-def test_quiz_screen_and_review(monkeypatch):
-    monkeypatch.setattr(api, "quiz", lambda s, cmid: QuizDetail(
-        cmid=cmid, id="8228", name="Mini quiz", time_limit="10 mins",
-        attempts_allowed=1, grade="10", best_grade="10", can_attempt=False,
-        access_rules=["Attempts allowed: 1"], prevented_reasons=["not available"],
-        attempts=[QuizAttempt(id="459484", number=1, state="finished", sumgrades="10")]))
-    monkeypatch.setattr(api, "quiz_review", lambda s, aid: QuizReview(
-        attempt_id=aid, quiz_id="8228", state="finished", grade="10",
-        questions=[QuizQuestion(number=1, slot=1, type="numerical", status="Correct",
-                                mark="10.00", max_mark="10", text="Q text")]))
-
-    async def go():
-        app = _App()
-        async with app.run_test(size=(120, 30)) as pilot:
-            app.push_screen(QuizScreen("188689"))
-            table = lambda: app.screen.query_one("#quiz-attempts", DataTable)
-            await _settle(pilot, lambda: not app.screen.query_one("#quiz-body").loading)
-            assert table().row_count == 1
-
-            app.push_screen(QuizReviewScreen("459484"))
-            body = lambda: app.screen.query_one("#review-body", VerticalScroll)
-            await _settle(pilot, lambda: not body().loading)
-            # header line + one question card
             assert len(body().children) == 2
 
     _run(go())

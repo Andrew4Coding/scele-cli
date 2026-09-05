@@ -7,8 +7,8 @@ icon: lucide/calendar-clock
 List upcoming deadlines across all your courses.
 
 `deadlines` is the command most people run most often. It sweeps **every course you are
-enrolled in** and returns the upcoming action items — assignment due dates and
-anything else Moodle treats as an activity deadline — sorted by when they land.
+enrolled in** and returns the upcoming action items (assignment due dates and
+anything else Moodle treats as an activity deadline), sorted by when they land.
 
 Each row carries the course it belongs to, the activity name, the absolute time in WIB, and
 a human countdown (`in 2 days`, `in 4 hours`), so you can read it without doing arithmetic.
@@ -57,7 +57,7 @@ Deadline[]
 ## Notes
 
 - `--days N` sets how far ahead to look. The default window is short on purpose; widen it at the start of a term.
-- Deadlines already past are not included — use `assignments <course>` to see a missed one.
+- Deadlines already past are not included: use `assignments <course>` to see a missed one.
 - This is the single best command to put under `watch`: `scele watch deadlines --interval 3600 -d`.
 
 ## See also

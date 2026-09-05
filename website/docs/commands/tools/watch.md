@@ -11,8 +11,8 @@ against the previous one, and reports **exactly which lines changed** as a git-s
 diff. Volatile keys such as `token` are stripped before comparison so they never register as
 a change.
 
-Run it in the foreground and it streams newline-delimited JSON events, one per line — the
-only command that does not print a single document. Run it with `-d` and it detaches into
+Run it in the foreground and it streams newline-delimited JSON events, one per line (the
+only command that does not print a single document). Run it with `-d` and it detaches into
 the background, writing events to `~/.config/scele/watches/<name>/events.jsonl` and POSTing
 each change to any webhooks you configured.
 
@@ -55,7 +55,7 @@ subcommands: start -> ActionResult & {name, detached, pid?}; ls -> {name, comman
 - `--on change` (the default) reports only differences; `--on start` also emits the first snapshot.
 - `--webhook URL` can be repeated; add auth with `--webhook-header 'X-Token: abc'`.
 - Change events carry both the `diff` and the full new `snapshot`, so a webhook receiver needs no state of its own.
-- The management subcommands — `ls`, `run`, `rm`, `clear`, `rename`, `logs` — each print a single document as usual.
+- The management subcommands (`ls`, `run`, `rm`, `clear`, `rename`, `logs`) each print a single document as usual.
 
 ## See also
 

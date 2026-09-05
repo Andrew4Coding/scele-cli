@@ -61,7 +61,7 @@ AssignmentInfo
 ## Notes
 
 - Accepts either the assignment instance id or the activity cmid.
-- Attachment URLs are pluginfile URLs — hand them straight to `download`.
+- Attachment URLs are pluginfile URLs, so you can hand them straight to `download`.
 - Instructions are Moodle HTML flattened to plain text, so formatting is lost but content is not.
 
 ## See also

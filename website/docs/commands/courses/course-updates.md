@@ -6,8 +6,8 @@ icon: lucide/graduation-cap
 
 Show what changed in a course recently.
 
-`course-updates` asks SCELE what has changed in a course recently — new or modified
-activities, new forum posts, new files. It is the closest thing to a per-course changelog.
+`course-updates` asks SCELE what has changed in a course recently, such as new or modified
+activities, new forum posts, or new files. It is the closest thing to a per-course changelog.
 
 Pair it with `watch` and you have a working "tell me when something changes in this course"
 monitor without writing any polling logic yourself.

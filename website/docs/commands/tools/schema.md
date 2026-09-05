@@ -7,7 +7,7 @@ icon: lucide/wrench
 Print a machine-readable manifest of all commands and I/O shapes.
 
 `schema` prints a machine-readable manifest of the entire CLI: every command, its arguments
-and options, the shape it returns, and an example invocation — plus the output contract,
+and options, the shape it returns, and an example invocation, plus the output contract,
 error codes, id conventions, and the field layout of every model.
 
 If you are scripting against `scele-cli`, or wiring it into an agent, **parse this instead of

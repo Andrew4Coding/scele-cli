@@ -96,6 +96,6 @@ All 31 commands, grouped by what they touch. Every page lists the arguments, the
 | `--version` | Print the version and exit. |
 | `--help` | Print help for the CLI or any subcommand. |
 
-Every command prints exactly one JSON document to stdout — a table on a terminal, plain
-JSON when piped — and on failure prints `{"ok": false, "error": <code>, "message": ...}`
+Every command prints exactly one JSON document to stdout (a table on a terminal, or plain
+JSON when piped), and on failure prints `{"ok": false, "error": <code>, "message": ...}`
 to stderr and exits 1.

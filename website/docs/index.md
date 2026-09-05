@@ -9,7 +9,7 @@ hide:
 
 # scele-cli { .hero__title }
 
-A command-line client for **SCELE** — the Moodle of Fakultas Ilmu Komputer,
+A command-line client for **SCELE**, the Moodle of Fakultas Ilmu Komputer,
 Universitas Indonesia. Authenticate once, then drive your courses, forums,
 and assignments straight from the terminal.
 { .hero__tagline }
@@ -34,52 +34,52 @@ and assignments straight from the terminal.
 <div class="feature-grid" markdown>
 
 <div class="feature-card" markdown>
-![Login](assets/features/login.png){ .feature-card__img }
+<div class="feature-card__badge"><span class="feature-card__prompt">$</span> <code>scele login</code></div>
 ### Login
 Exchange your username and password for a Moodle web-service token. Only the
-token is stored — never the password. No browser, no CAPTCHA.
+token is stored, never the password. No browser, no CAPTCHA.
 </div>
 
 <div class="feature-card" markdown>
-![Courses](assets/features/courses.png){ .feature-card__img }
+<div class="feature-card__badge"><span class="feature-card__prompt">$</span> <code>scele courses</code></div>
 ### Courses & grades
 List the courses you are enrolled in, read a section-by-section outline, see
 enrolled people, and pull your grade items for any course.
 </div>
 
 <div class="feature-card" markdown>
-![Deadlines](assets/features/deadlines.png){ .feature-card__img }
+<div class="feature-card__badge"><span class="feature-card__prompt">$</span> <code>scele deadlines</code></div>
 ### Deadlines & calendar
 Upcoming deadlines across every course, calendar events, and your SCELE
-notifications — each rendered in `YYYY-MM-DD HH:MM WIB`.
+notifications, each rendered in `YYYY-MM-DD HH:MM WIB`.
 </div>
 
 <div class="feature-card" markdown>
-![Forum](assets/features/forum.png){ .feature-card__img }
+<div class="feature-card__badge"><span class="feature-card__prompt">$</span> <code>scele forum</code></div>
 ### Forums
 Browse forums in a course, list discussions, and read whole threads with
 nesting (parent + depth). Post a new topic or reply to an exact post.
 </div>
 
 <div class="feature-card" markdown>
-![Assignments](assets/features/assignments.png){ .feature-card__img }
+<div class="feature-card__badge"><span class="feature-card__prompt">$</span> <code>scele assignments</code></div>
 ### Assignments
 Check submission status and due dates, read the instructions and attachments,
-and submit text or a file — with an explicit confirmation step.
+and submit text or a file with an explicit confirmation step.
 </div>
 
 <div class="feature-card" markdown>
-![Resources](assets/features/resources.png){ .feature-card__img }
+<div class="feature-card__badge"><span class="feature-card__prompt">$</span> <code>scele download</code></div>
 ### Resources
 List every downloadable file in a course with its `fileurl`, then download by
 pluginfile URL or by resource `cmid`.
 </div>
 
 <div class="feature-card" markdown>
-![Watch](assets/features/watch.png){ .feature-card__img }
+<div class="feature-card__badge"><span class="feature-card__prompt">$</span> <code>scele watch</code></div>
 ### Watch
 Re-run any `scele-cli` subcommand on an interval, diff its JSON output, log events,
-and POST changes to a webhook — foreground stream or background daemon.
+and POST changes to a webhook: foreground stream or background daemon.
 </div>
 
 </div>
@@ -88,7 +88,7 @@ and POST changes to a webhook — foreground stream or background daemon.
 
 === "Linux / macOS"
 
-    Prebuilt binary — no Python required:
+    Prebuilt binary (no Python required):
 
     ``` bash
     curl -fsSL https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.sh | sh
@@ -103,7 +103,7 @@ and POST changes to a webhook — foreground stream or background daemon.
 
 === "Windows (PowerShell)"
 
-    Prebuilt binary — no Python required:
+    Prebuilt binary (no Python required):
 
     ``` powershell
     irm https://raw.githubusercontent.com/Andrew4Coding/scele-cli/main/install-bin.ps1 | iex

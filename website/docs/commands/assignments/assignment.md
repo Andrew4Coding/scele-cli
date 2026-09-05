@@ -52,7 +52,7 @@ AssignmentStatus
 ## Notes
 
 - Takes an activity cmid.
-- A submission left in `draft` state has not been handed in — teachers do not see it until you submit it for grading.
+- A submission left in `draft` state has not been handed in: teachers do not see it until you submit it for grading.
 - Under `watch`, this is how you get notified the moment a grade appears.
 
 ## See also

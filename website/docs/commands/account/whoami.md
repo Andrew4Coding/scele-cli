@@ -8,7 +8,7 @@ Report whether the stored token is valid and who it belongs to.
 
 `whoami` answers one question: *is the stored token still good?* It loads the token from the
 config directory and makes a single `core_webservice_get_site_info` call. If the call
-succeeds it reports the account behind the token — user id, username, full name, and the
+succeeds it reports the account behind the token: user id, username, full name, and the
 site it is bound to.
 
 It is the cheapest health check available, so it is the right first call in any script

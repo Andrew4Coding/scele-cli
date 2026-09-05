@@ -6,8 +6,8 @@ icon: lucide/megaphone
 
 Show front-page / dashboard announcements.
 
-`announcements` reads the front-page and dashboard announcements — the site-wide notices
-from the faculty, separate from any individual course forum.
+`announcements` reads the front-page and dashboard announcements (the site-wide notices
+from the faculty, separate from any individual course forum).
 
 Each entry carries the subject, author, date, plain-text body, and a permalink back to
 SCELE.

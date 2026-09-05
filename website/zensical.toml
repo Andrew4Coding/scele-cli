@@ -1,7 +1,7 @@
 [project]
 site_url = "https://andrew4coding.github.io/scele-cli/"
 site_name = "scele-cli"
-site_description = "scele-cli — command-line client for SCELE, the Moodle of Fakultas Ilmu Komputer, Universitas Indonesia."
+site_description = "scele-cli: command-line client for SCELE, the Moodle of Fakultas Ilmu Komputer, Universitas Indonesia."
 site_author = "Andrew Devito Aryo"
 
 copyright = "Copyright &copy; 2026 Andrew Devito Aryo &middot; MIT License"

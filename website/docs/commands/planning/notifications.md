@@ -6,8 +6,8 @@ icon: lucide/calendar-clock
 
 Show your recent SCELE notifications.
 
-`notifications` prints your recent SCELE notifications — the bell-icon feed: forum replies,
-grading notices, assignment reminders, and system messages.
+`notifications` prints your recent SCELE notifications (the bell-icon feed: forum replies,
+course announcements, assignment reminders), and system messages.
 
 Each entry carries its subject, the plain-text body, when it arrived, and whether you have
 read it.

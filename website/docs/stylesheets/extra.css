@@ -1,295 +1,515 @@
 /* =========================================================================
-   Palette — SCELE gold.
-   The header carries the yellow in light mode with dark text on it; in dark
-   mode the header goes near-black and the gold moves to type and accents,
-   which is the only way yellow stays readable in both schemes.
+   scele-cli Documentation Stylesheet
+   Brand Palette: SCELE Makara Gold (Universitas Indonesia Fasilkom)
+   Accessibility: WCAG AA verified (4.5:1 normal text, 3:1 components/large)
+   Design Dials: ENERGY 2 (Balanced) / RHYTHM 2 (Varied) / MOTION 1 (Calm)
    ========================================================================= */
 
 :root {
   --scele-gold: #f2b705;
-  --scele-gold-light: #ffd44d;
-  --scele-gold-dark: #b37f00;
-  --scele-ink: #2a2003;
+  --scele-gold-hover: #dfa600;
+  --scele-gold-light: #fde047;
+  --scele-gold-dark: #b45309;
+  --scele-ink: #18181b;
+  --scele-radius: 0.45rem;
+  --scele-radius-sm: 0.35rem;
+  --scele-radius-lg: 0.65rem;
 }
 
+/* -------------------------------------------------------------------------
+   Light Scheme (Default)
+   Header carries SCELE gold with dark ink text.
+   Body is warm canvas (#faf9f5) with deep ink typography (#18181b).
+   ------------------------------------------------------------------------- */
 [data-md-color-scheme="default"][data-md-color-primary] {
   --md-primary-fg-color: var(--scele-gold);
   --md-primary-fg-color--light: var(--scele-gold-light);
   --md-primary-fg-color--dark: var(--scele-gold-dark);
   --md-primary-bg-color: var(--scele-ink);
-  --md-primary-bg-color--light: rgba(42, 32, 3, 0.72);
+  --md-primary-bg-color--light: rgba(24, 24, 27, 0.75);
+
+  --md-default-bg-color: #faf9f5;
+  --md-default-fg-color: #18181b;
+  --md-default-fg-color--light: #4b4843;
+  --md-default-fg-color--lighter: #6b6760;
 
   --md-accent-fg-color: var(--scele-gold-dark);
-  --md-accent-fg-color--transparent: rgba(179, 127, 0, 0.1);
+  --md-accent-fg-color--transparent: rgba(180, 83, 9, 0.1);
 
-  --md-typeset-a-color: #8a6100;
-  --md-footer-bg-color: #241d0a;
-  --md-footer-bg-color--dark: #17120a;
+  --md-typeset-a-color: #92400e;
+  --md-footer-bg-color: #1e1b15;
+  --md-footer-bg-color--dark: #14120e;
+  --md-code-bg-color: #f3f0e6;
+  --md-code-fg-color: #18181b;
 
   --scele-accent: var(--scele-gold-dark);
-  --scele-surface: #fffdf5;
-  --scele-border: #e8dcb4;
+  --scele-accent-subtle: rgba(180, 83, 9, 0.1);
+  --scele-surface: #ffffff;
+  --scele-surface-raised: #ffffff;
+  --scele-border: #e6dfcd;
+  --scele-border-hover: #caa840;
+  --scele-card-shadow: 0 1px 3px rgba(42, 32, 3, 0.05);
+
+  --scele-cta-secondary-bg: #ffffff;
+  --scele-cta-secondary-fg: #18181b;
+  --scele-cta-secondary-border: #d7ceb8;
 }
 
+/* -------------------------------------------------------------------------
+   Dark Scheme (Slate / Obsidian)
+   True deep slate (#0d0f12) with vibrant SCELE gold accents.
+   ------------------------------------------------------------------------- */
 [data-md-color-scheme="slate"][data-md-color-primary] {
   --md-hue: 45;
 
-  --md-primary-fg-color: #1c1810;
-  --md-primary-fg-color--light: #2b2517;
-  --md-primary-fg-color--dark: #100d08;
-  --md-primary-bg-color: var(--scele-gold-light);
-  --md-primary-bg-color--light: rgba(255, 212, 77, 0.72);
+  --md-primary-fg-color: #13161c;
+  --md-primary-fg-color--light: #1c2028;
+  --md-primary-fg-color--dark: #0a0c0f;
+  --md-primary-bg-color: #f4f4f5;
+  --md-primary-bg-color--light: rgba(244, 244, 245, 0.75);
 
-  --md-accent-fg-color: var(--scele-gold-light);
-  --md-accent-fg-color--transparent: rgba(255, 212, 77, 0.1);
+  --md-default-bg-color: #0d0f12;
+  --md-default-fg-color: #f4f4f5;
+  --md-default-fg-color--light: #a1a1aa;
+  --md-default-fg-color--lighter: #71717a;
 
-  --md-typeset-a-color: var(--scele-gold-light);
-  --md-footer-bg-color: #14110a;
-  --md-footer-bg-color--dark: #0d0b06;
+  --md-accent-fg-color: var(--scele-gold);
+  --md-accent-fg-color--transparent: rgba(242, 183, 5, 0.12);
 
-  --scele-accent: var(--scele-gold-light);
-  --scele-surface: rgba(255, 212, 77, 0.03);
-  --scele-border: rgba(255, 212, 77, 0.18);
+  --md-typeset-a-color: var(--scele-gold);
+  --md-footer-bg-color: #0a0b0d;
+  --md-footer-bg-color--dark: #060708;
+  --md-code-bg-color: #161920;
+  --md-code-fg-color: #e4e4e7;
+
+  --scele-accent: var(--scele-gold);
+  --scele-accent-subtle: rgba(242, 183, 5, 0.12);
+  --scele-surface: #14171d;
+  --scele-surface-raised: #1a1e26;
+  --scele-border: #262a33;
+  --scele-border-hover: #f2b705;
+  --scele-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+  --scele-cta-secondary-bg: #14171d;
+  --scele-cta-secondary-fg: #f4f4f5;
+  --scele-cta-secondary-border: #333844;
 }
 
-/* The header title and icons ride on the gold in light mode. */
-.md-header,
-.md-tabs {
-  color: var(--md-primary-bg-color);
+/* =========================================================================
+   Header & Tabs
+   ========================================================================= */
+
+.md-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.md-tabs {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+[data-md-color-scheme="slate"] .md-header {
+  border-bottom: 1px solid var(--scele-border);
 }
 
-[data-md-color-scheme="slate"] .md-tabs {
-  border-bottom-color: rgba(255, 212, 77, 0.14);
+.md-header__title {
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-[data-md-color-scheme="default"][data-md-color-primary] .md-search__form {
-  background-color: rgba(42, 32, 3, 0.12);
-}
-
-[data-md-color-scheme="default"][data-md-color-primary] .md-search__input::placeholder,
-[data-md-color-scheme="default"][data-md-color-primary] .md-search__icon {
-  color: rgba(42, 32, 3, 0.6);
-}
-
-/* No brand mark in the header — the wordmark carries it. */
 .md-header__button.md-logo {
   display: none;
 }
 
-.md-header__title {
-  margin-left: 0.6rem;
+/* Tabs: clean separate tier with distinct contrast */
+.md-tabs {
+  background-color: var(--md-default-bg-color);
+  border-bottom: 1px solid var(--scele-border);
+  color: var(--md-default-fg-color--light);
 }
 
-/* Selected item in the integrated left-hand table of contents. */
+[data-md-color-scheme="default"] .md-tabs {
+  background-color: #f4f2ea;
+  border-bottom-color: #e0d8c3;
+  color: #3b3935;
+}
+
+.md-tabs__link {
+  font-size: 0.78rem;
+  font-weight: 500;
+  opacity: 0.85;
+  transition: opacity 120ms ease, color 120ms ease;
+}
+
+.md-tabs__item--active .md-tabs__link,
+.md-tabs__link:hover {
+  opacity: 1;
+  color: var(--scele-accent);
+}
+
+.md-tabs__item--active .md-tabs__link {
+  font-weight: 700;
+  border-bottom: 2px solid var(--scele-accent);
+}
+
+/* Search Box in Header */
+[data-md-color-scheme="default"][data-md-color-primary] .md-search__form {
+  background-color: rgba(24, 24, 27, 0.1);
+  border: 1px solid rgba(24, 24, 27, 0.16);
+  border-radius: var(--scele-radius-sm);
+}
+
+[data-md-color-scheme="default"][data-md-color-primary] .md-search__input {
+  color: var(--scele-ink);
+}
+
+[data-md-color-scheme="default"][data-md-color-primary] .md-search__input::placeholder,
+[data-md-color-scheme="default"][data-md-color-primary] .md-search__icon {
+  color: rgba(24, 24, 27, 0.72);
+}
+
+[data-md-color-scheme="slate"] .md-search__form {
+  background-color: #181c24;
+  border: 1px solid var(--scele-border);
+  border-radius: var(--scele-radius-sm);
+}
+
+/* Navigation link states */
 .md-nav__link--active,
 .md-nav__link:hover {
   color: var(--scele-accent);
 }
 
+/* Heading permalinks: visible on hover/focus only (R-32, cleans up ¶ symbol) */
+.headerlink {
+  opacity: 0;
+  text-decoration: none !important;
+  margin-left: 0.4rem;
+  color: var(--scele-accent);
+  transition: opacity 120ms ease;
+}
+
+h1:hover .headerlink,
+h2:hover .headerlink,
+h3:hover .headerlink,
+h4:hover .headerlink,
+.headerlink:focus,
+.headerlink:focus-visible {
+  opacity: 0.75;
+}
+
 /* =========================================================================
-   Hero
+   Hero Section
    ========================================================================= */
 
 .hero {
   text-align: center;
-  padding: 3.5rem 0 2.5rem;
+  padding: 3.5rem 1rem 2.8rem;
   border-bottom: 1px solid var(--scele-border);
-  margin-bottom: 2.5rem;
+  margin-bottom: 3rem;
 }
 
 .hero__title {
   font-size: 3.2rem;
+  font-weight: 800;
   line-height: 1.1;
-  margin: 0 0 0.6rem;
-  letter-spacing: -0.03em;
-  background: linear-gradient(96deg, var(--scele-gold-dark), var(--scele-gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.035em;
+  color: var(--scele-ink);
 }
 
 [data-md-color-scheme="slate"] .hero__title {
-  background: linear-gradient(96deg, var(--scele-gold), var(--scele-gold-light));
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #ffffff;
+}
+
+.hero__title-accent {
+  color: var(--scele-gold);
 }
 
 .hero__tagline {
   max-width: 42rem;
-  margin: 0 auto 2rem;
-  font-size: 0.9rem;
+  margin: 0 auto 2.2rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--md-default-fg-color--light);
 }
 
+/* Interactive install block */
 .hero__install {
   max-width: 44rem;
-  margin: 0 auto 1.6rem;
+  margin: 0 auto 1.8rem;
   text-align: left;
 }
 
 .hero__install-os {
   display: block;
-  font-size: 0.62rem;
+  font-size: 0.65rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--md-default-fg-color--light);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.45rem;
 }
 
 .hero__install-row {
   display: flex;
-  align-items: stretch;
-  gap: 0.5rem;
-  background: var(--md-code-bg-color);
+  align-items: center;
+  gap: 0.6rem;
+  background: #15181e;
   border: 1px solid var(--scele-border);
-  border-radius: 0.4rem;
-  padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+  border-radius: var(--scele-radius);
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .hero__install-row code {
   flex: 1;
-  align-self: center;
   background: none;
+  color: #e4e4e7;
   padding: 0;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", monospace;
   white-space: nowrap;
   overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .hero__copy {
   flex: none;
+  min-height: 44px;
+  min-width: 72px;
   cursor: pointer;
   border: none;
-  border-radius: 0.3rem;
-  padding: 0 0.9rem;
-  font-size: 0.7rem;
+  border-radius: var(--scele-radius-sm);
+  padding: 0 1rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--scele-ink);
+  color: #18181b;
   background: var(--scele-gold);
+  transition: background-color 120ms ease, transform 80ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero__copy:hover {
-  filter: brightness(1.08);
+  background: var(--scele-gold-hover);
 }
 
+.hero__copy:active {
+  transform: scale(0.98);
+}
+
+/* Call to action buttons (44px min tap target per R-03, C-4) */
 .hero__cta {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.85rem;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.hero__cta .md-button {
+  min-height: 44px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--scele-radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 120ms ease;
+  text-decoration: none;
+}
+
+/* Primary CTA: Solid Gold with dark ink text (ratio 9.75:1) */
+.hero__cta .md-button--primary {
+  background-color: var(--scele-gold);
+  color: #18181b !important;
+  border: 1px solid var(--scele-gold);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.hero__cta .md-button--primary:hover {
+  background-color: var(--scele-gold-hover);
+  border-color: var(--scele-gold-hover);
+  color: #18181b !important;
+  transform: translateY(-1px);
+}
+
+/* Secondary CTA: Clean outline button with high contrast */
+.hero__cta .md-button:not(.md-button--primary) {
+  background-color: var(--scele-cta-secondary-bg);
+  color: var(--scele-cta-secondary-fg) !important;
+  border: 1px solid var(--scele-cta-secondary-border);
+}
+
+.hero__cta .md-button:not(.md-button--primary):hover {
+  border-color: var(--scele-accent);
+  color: var(--scele-accent) !important;
+  transform: translateY(-1px);
 }
 
 /* =========================================================================
-   Feature grid
+   Feature Section & Cards (Content-Driven Composition C-3, R-14)
    ========================================================================= */
 
 .feature-heading {
   text-align: center;
-  margin-top: 3rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 3.5rem 0 1.5rem;
 }
 
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: 1.2rem;
-  margin: 2rem 0 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0 3.5rem;
 }
 
 .feature-card {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--scele-border);
-  border-radius: 0.5rem;
-  padding: 1.3rem;
+  border-radius: var(--scele-radius);
+  padding: 1.35rem;
   background: var(--scele-surface);
-  transition: border-color 120ms ease, transform 120ms ease;
+  box-shadow: var(--scele-card-shadow);
+  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
 }
 
 .feature-card:hover {
-  border-color: var(--scele-accent);
+  border-color: var(--scele-border-hover);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* CLI command preview badge inside feature card (replaces broken images) */
+.feature-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--scele-border);
+  border-radius: var(--scele-radius-sm);
+  padding: 0.35rem 0.65rem;
+  margin-bottom: 0.9rem;
+  font-size: 0.74rem;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", monospace;
+  color: var(--md-default-fg-color);
+  align-self: flex-start;
+}
+
+.feature-card__prompt {
+  color: var(--scele-gold);
+  font-weight: 700;
+  user-select: none;
 }
 
 .feature-card h3 {
-  margin: 0.7rem 0 0.4rem;
-  font-size: 1rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .feature-card p {
   margin: 0;
-  font-size: 0.76rem;
+  font-size: 0.84rem;
+  line-height: 1.55;
   color: var(--md-default-fg-color--light);
+  flex: 1;
 }
 
+/* Hide placeholder images so broken icon is never visible */
 .feature-card__img {
+  display: none;
+}
+
+.feature-card__img.has-image {
   display: block;
   width: 100%;
   height: 9rem;
   object-fit: cover;
-  border-radius: 0.35rem;
-  background: var(--md-code-bg-color);
-}
-
-.feature-card__img.is-placeholder {
-  font-size: 0;
-  border: 1px dashed var(--scele-border);
+  border-radius: var(--scele-radius-sm);
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--scele-border);
 }
 
 /* =========================================================================
-   Command pages
+   Install Tabs & Command Pages
    ========================================================================= */
 
-/* Screenshot of a command's real output. */
+.tabbed-set {
+  border-radius: var(--scele-radius);
+  overflow: hidden;
+  border: 1px solid var(--scele-border);
+}
+
+.tabbed-labels {
+  background-color: var(--scele-surface);
+  border-bottom: 1px solid var(--scele-border);
+}
+
+.tabbed-labels > label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.7rem 1rem;
+}
+
+/* Functional "write" badge in command overview table (R-09) */
+.cmd-write {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--scele-radius-sm);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #18181b;
+  background: var(--scele-gold);
+}
+
+/* Command screenshots if rendered */
 .cmd-shot {
   display: block;
   width: 100%;
   border: 1px solid var(--scele-border);
-  border-radius: 0.4rem;
+  border-radius: var(--scele-radius);
   background: var(--md-code-bg-color);
 }
 
 .cmd-shot.is-placeholder {
-  font-size: 0;
-  min-height: 8rem;
-  border-style: dashed;
+  display: none;
 }
 
-/* "write" badge in the command overview table. */
-.cmd-write {
-  display: inline-block;
-  padding: 0.05rem 0.4rem;
-  border-radius: 0.6rem;
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--scele-ink);
-  background: var(--scele-gold);
+/* Admonitions styling aligned to SCELE palette */
+.md-typeset .admonition {
+  border-left-width: 4px;
+  border-radius: var(--scele-radius-sm);
 }
 
 /* =========================================================================
-   Report-an-issue form
+   Report-an-Issue Form (report.md)
    ========================================================================= */
 
 .issue-form {
-  max-width: 40rem;
-  margin: 1.5rem 0 2rem;
+  max-width: 42rem;
+  margin: 1.8rem 0 2.5rem;
 }
 
 .issue-field {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .issue-field label {
   display: block;
-  margin-bottom: 0.3rem;
-  font-size: 0.72rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  color: var(--md-default-fg-color);
 }
 
 .issue-field label span {
@@ -303,120 +523,212 @@
 .issue-field select,
 .issue-field textarea {
   width: 100%;
-  padding: 0.5rem 0.6rem;
+  min-height: 44px;
+  padding: 0.6rem 0.8rem;
   font-family: inherit;
-  font-size: 0.76rem;
+  font-size: 0.84rem;
   color: var(--md-default-fg-color);
-  background: var(--md-default-bg-color);
+  background: var(--scele-surface);
   border: 1px solid var(--scele-border);
-  border-radius: 0.3rem;
+  border-radius: var(--scele-radius-sm);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.issue-field input::placeholder,
+.issue-field textarea::placeholder {
+  color: var(--md-default-fg-color--light);
+  opacity: 0.75;
 }
 
 .issue-field textarea {
+  min-height: 140px;
   resize: vertical;
-  font-family: var(--md-code-font-family, monospace);
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 0.8rem;
 }
 
 .issue-field input:focus,
 .issue-field select:focus,
 .issue-field textarea:focus {
   outline: 2px solid var(--scele-accent);
-  outline-offset: -1px;
-  border-color: transparent;
+  outline-offset: 1px;
+  border-color: var(--scele-accent);
 }
 
 .issue-actions {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1rem;
   flex-wrap: wrap;
+  margin-top: 1.5rem;
 }
 
 .issue-actions .md-button {
-  margin: 0;
+  min-height: 44px;
+  padding: 0.65rem 1.4rem;
+  font-weight: 600;
+  border-radius: var(--scele-radius-sm);
+  background-color: var(--scele-gold);
+  color: #18181b !important;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.issue-hint {
-  flex: 1;
-  min-width: 12rem;
-  font-size: 0.66rem;
-  color: var(--md-default-fg-color--light);
+.issue-actions .md-button:hover {
+  background-color: var(--scele-gold-hover);
 }
 
 /* =========================================================================
-   Contributors
+   Contributors Section (credits.md)
    ========================================================================= */
 
 .contributors {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
-  gap: 0.8rem;
-  margin: 1.5rem 0 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.9rem;
+  margin: 1.8rem 0 2.5rem;
 }
 
 .contributors__status {
   grid-column: 1 / -1;
   margin: 0;
-  font-size: 0.76rem;
+  font-size: 0.82rem;
   color: var(--md-default-fg-color--light);
 }
 
 .contributor {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  min-height: 44px;
   border: 1px solid var(--scele-border);
-  border-radius: 0.4rem;
+  border-radius: var(--scele-radius);
   background: var(--scele-surface);
   color: inherit;
-  text-decoration: none;
-  transition: border-color 120ms ease;
+  text-decoration: none !important;
+  transition: border-color 120ms ease, transform 120ms ease;
 }
 
 .contributor:hover {
   border-color: var(--scele-accent);
+  transform: translateY(-1px);
 }
 
 .contributor img {
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   flex: none;
   border-radius: 50%;
+  border: 1px solid var(--scele-border);
   background: var(--md-code-bg-color);
 }
 
 .contributor__name {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   word-break: break-word;
+  color: var(--md-default-fg-color);
 }
 
 .contributor__count {
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   color: var(--md-default-fg-color--light);
 }
 
 /* =========================================================================
-   Footer
+   Site Footer
    ========================================================================= */
 
 .site-foot {
   text-align: center;
-  padding: 2.5rem 0 1rem;
+  padding: 3rem 1rem 1.5rem;
   border-top: 1px solid var(--scele-border);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--md-default-fg-color--light);
 }
 
-.site-foot span {
-  display: block;
-  margin-top: 0.6rem;
-  opacity: 0.75;
+.site-foot a {
+  color: var(--md-default-fg-color--light);
+  text-decoration: none;
+  transition: color 120ms ease;
 }
 
+.site-foot a:hover {
+  color: var(--scele-accent);
+}
+
+/* =========================================================================
+   Accessibility: Visible Keyboard Focus States (R-32, WCAG 2.4.7)
+   ========================================================================= */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--scele-accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* =========================================================================
+   Mobile Responsiveness (R-03)
+   ========================================================================= */
+
 @media screen and (max-width: 44rem) {
-  .hero__title { font-size: 2.4rem; }
-  .hero__install-row code { white-space: normal; word-break: break-all; }
+  .hero {
+    padding: 2.5rem 0.75rem 2rem;
+  }
+
+  .hero__title {
+    font-size: 2.3rem;
+  }
+
+  .hero__tagline {
+    font-size: 0.9rem;
+    padding: 0 0.5rem;
+  }
+
+  .hero__install-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.85rem;
+  }
+
+  .hero__install-row code {
+    font-size: 0.78rem;
+    padding: 0.2rem 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: thin;
+  }
+
+  .hero__copy {
+    width: 100%;
+    min-height: 44px;
+    font-size: 0.76rem;
+  }
+
+  .hero__cta {
+    flex-direction: column;
+    width: 100%;
+    max-width: 20rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero__cta .md-button {
+    width: 100%;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }

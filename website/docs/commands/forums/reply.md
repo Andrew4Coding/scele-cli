@@ -7,7 +7,7 @@ icon: lucide/messages-square
 Reply to a forum post.
 
 `reply` posts a reply to one specific forum post. The argument is a **post id**, which you
-get from `thread` — not a discussion id.
+get from `thread`, not a discussion id.
 
 Because you address a post rather than a thread, your reply lands in the right place in the
 conversation tree. Pass `--subject` to override the default `Re: …`.
@@ -28,7 +28,7 @@ scele reply <post_id> [--message <message>] [--subject <subject>] [--yes]
 
 | Flag | Type | Description |
 | --- | --- | --- |
-| `--message` | value | — |
+| `--message` | value | Body of the reply. |
 | `--subject` | value | Override the auto 'Re:' subject. |
 | `--yes` | flag | Skip the confirmation prompt. |
 
@@ -58,7 +58,7 @@ ActionResult & {url: string}
 
 ## Notes
 
-- Requires `--yes` (or a terminal confirmation) — it is public and irreversible.
+- Requires `--yes` (or a terminal confirmation): it is public and irreversible.
 - Replying to the depth-0 post is the same as replying to the discussion as a whole.
 
 ## See also

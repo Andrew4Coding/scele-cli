@@ -10,7 +10,7 @@ Show the posts in a discussion thread.
 Each post carries a `parent` (the post it replies to) and a `depth` (0 for the discussion
 starter, 1 for a direct reply, and so on).
 
-Because the nesting is explicit, you can render the thread as a tree, and — more usefully —
+Because the nesting is explicit, you can render the thread as a tree, and even more usefully,
 you can reply to the *exact* post you mean rather than to the thread in general.
 
 ## Usage
@@ -57,7 +57,7 @@ Post[]
 
 - Indent a thread on the fly: `scele -c thread 62493 | jq -r '.[] | "\(.depth * "  ")\(.author): \(.body)"'`.
 - Post bodies are Moodle HTML flattened to plain text; attachments are listed separately.
-- The whole thread is returned — there is no limit flag, because splitting a conversation is rarely what you want.
+- The whole thread is returned: there is no limit flag, because splitting a conversation is rarely what you want.
 
 ## See also
 

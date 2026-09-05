@@ -7,7 +7,7 @@ icon: lucide/messages-square
 List discussions in a forum.
 
 `forum` lists the discussions (threads) in one forum. It accepts either the forum's activity
-cmid — what `forums` and `course` give you — or the raw forum instance id, and figures out
+cmid (what `forums` and `course` give you) or the raw forum instance id, and figures out
 which one you handed it.
 
 Each discussion carries a discussion id (`d`), the subject, who started it, when the last

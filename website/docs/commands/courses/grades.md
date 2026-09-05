@@ -10,7 +10,7 @@ Show your grade items for a course.
 the range it was graded against, the percentage, and any feedback the grader left.
 
 It reads the user grade report, so it shows exactly what you would see on the course's
-Grades page — nothing more, and nothing about anyone else.
+Grades page: nothing more, and nothing about anyone else.
 
 ## Usage
 

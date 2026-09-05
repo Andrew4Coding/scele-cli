@@ -6,8 +6,8 @@ icon: lucide/folder-down
 
 List downloadable file/folder resources in a course.
 
-`resources` lists every downloadable file and folder resource in a course — lecture slides,
-handouts, datasets — each with its filename, size, activity cmid, and direct `fileurl`.
+`resources` lists every downloadable file and folder resource in a course (such as lecture slides,
+handouts, and datasets), each with its filename, size, activity cmid, and direct `fileurl`.
 
 Hand either the cmid or the `fileurl` to `download`.
 

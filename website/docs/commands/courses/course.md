@@ -7,7 +7,7 @@ icon: lucide/graduation-cap
 Show a course outline (sections and activities).
 
 `course` prints the outline of a single course: every section, and inside each section every
-activity — assignments, forums, files, URLs, pages, and so on.
+activity: assignments, forums, files, URLs, pages, and so on.
 
 This is where **cmids** come from. A cmid (course-module id) identifies one activity inside
 one course, and it is what `assignment`, `download`, and `forum` expect. If you know
@@ -53,7 +53,7 @@ Section[]
 
 - Sections appear in the order SCELE renders them, so section names double as a rough syllabus.
 - An activity's `type` tells you which command handles it: `assign` → `assignment`, `forum` → `forum`, `resource`/`folder` → `download`.
-- Hidden or restricted activities are simply absent — the web-service API applies your own permissions.
+- Hidden or restricted activities are simply absent; the web-service API applies your own permissions.
 
 ## See also
 

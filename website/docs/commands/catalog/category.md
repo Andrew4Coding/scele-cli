@@ -9,7 +9,7 @@ List courses inside a category.
 `category` lists the **courses** inside one category id, as opposed to `categories`, which
 lists sub-categories.
 
-This is how you find a course you are not enrolled in yet — get its id here, then hand that
+This is how you find a course you are not enrolled in yet: get its id here, then hand that
 id to `enrol`.
 
 ## Usage

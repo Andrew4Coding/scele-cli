@@ -9,7 +9,7 @@ Self-enrol into a course.
 `enrol` self-enrols you into a course that has self-enrolment turned on. Pass the course id;
 if the course is protected by an enrolment key, pass it with `--key`.
 
-This is a **write operation** — it changes your enrolment on SCELE. After it succeeds the
+This is a **write operation**: it changes your enrolment on SCELE. After it succeeds the
 course shows up in `scele courses`.
 
 ## Usage

@@ -21,8 +21,8 @@ scele calendar [--days-back <days_back>] [--days-ahead <days_ahead>]
 
 | Flag | Type | Description |
 | --- | --- | --- |
-| `--days-back` | value | — |
-| `--days-ahead` | value | — |
+| `--days-back` | value | Number of days in the past to include. |
+| `--days-ahead` | value | Number of days in the future to include. |
 
 ## Example
 

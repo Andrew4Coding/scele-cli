@@ -6,8 +6,8 @@ icon: lucide/messages-square
 
 List the forums in a course.
 
-`forums` lists the forums inside a course — the announcement forum, Q&A forums, discussion
-boards, and so on — with the cmid you need to open each one.
+`forums` lists the forums inside a course (the announcement forum, Q&A forums, discussion
+boards, and so on), including the cmid you need to open each one.
 
 Feed a cmid from here into `forum` to see the discussions inside it.
 

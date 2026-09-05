@@ -6,8 +6,8 @@ icon: lucide/library
 
 Browse the course category tree.
 
-`categories` browses the SCELE course-category tree — the catalog of everything the faculty
-offers, not just what you are enrolled in.
+`categories` browses the SCELE course-category tree: the catalog of everything the faculty
+offers, organised by academic year and programme.
 
 Called with no arguments it returns the top level. Pass `--id N` to descend into one
 category and see its children.

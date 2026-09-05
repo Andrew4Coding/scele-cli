@@ -13,10 +13,10 @@ Found a bug, a command that returns the wrong shape, or something missing from t
 <div class="issue-field">
   <label for="issue-kind">What kind of issue is it?</label>
   <select id="issue-kind">
-    <option value="bug">Bug — a command fails or returns the wrong thing</option>
-    <option value="docs">Documentation Issue — something here is wrong or missing</option>
-    <option value="feature">Feature request — something scele should be able to do</option>
-    <option value="question">Question — how do I …?</option>
+    <option value="bug">Bug: a command fails or returns the wrong thing</option>
+    <option value="docs">Documentation Issue: something here is wrong or missing</option>
+    <option value="feature">Feature request: something scele should be able to do</option>
+    <option value="question">Question: how do I use a specific feature?</option>
   </select>
 </div>
 
@@ -37,7 +37,7 @@ Found a bug, a command that returns the wrong shape, or something missing from t
 
 <div class="issue-field">
   <label for="issue-version">scele version <span>(run <code>scele --version</code>)</span></label>
-  <input id="issue-version" type="text" placeholder="0.2.0" />
+  <input id="issue-version" type="text" placeholder="0.2.1" />
 </div>
 
 <div class="issue-actions">

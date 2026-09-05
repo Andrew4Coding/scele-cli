@@ -11,7 +11,7 @@ and password to `/login/token.php` with `service=moodle_mobile_app`, receives a 
 mobile web-service token**, verifies that token with a `core_webservice_get_site_info` call,
 and only then writes it to disk.
 
-The password is **never written anywhere** — not to the token file, not to a log, not to
+The password is **never written anywhere**, not to the token file, not to a log, not to
 your shell history if you use the prompt. Only the verified token is stored. If the login
 fails, any token you already had is left untouched.
 
@@ -60,7 +60,7 @@ ActionResult
 
 - The prompt and all notices go to **stderr**, so `scele login > token-result.json` still gives you a clean JSON document.
 - A wrong username or password returns the error code `login_failed`.
-- An account that only signs in through an external SSO/CAS/SAML page cannot mint a token this way — `/login/token.php` never sees a password for it.
+- An account that only signs in through an external SSO/CAS/SAML page cannot mint a token this way: `/login/token.php` never sees a password for it.
 - Tokens do expire. When any command starts returning `not_authenticated`, run `login` again.
 
 ## See also

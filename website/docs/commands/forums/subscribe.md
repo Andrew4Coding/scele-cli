@@ -55,7 +55,7 @@ ActionResult & {subscribed: bool}
 
 ## Notes
 
-- Some forums are force-subscribed by the teacher and cannot be turned off — SCELE will say so.
+- Some forums are force-subscribed by the teacher and cannot be turned off: SCELE will say so.
 - Subscription state shows up in `notifications` once new posts arrive.
 
 ## See also

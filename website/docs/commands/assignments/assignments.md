@@ -61,7 +61,7 @@ AssignmentInfo[]
 
 ## Notes
 
-- This does not tell you whether *you* submitted — that is `assignment <cmid>`.
+- This does not tell you whether *you* submitted: that is `assignment <cmid>`.
 - For a cross-course view of what is due next, use `deadlines` instead.
 
 ## See also

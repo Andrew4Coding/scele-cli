@@ -27,10 +27,8 @@ scele post <forum_id> [--subject <subject>] [--message <message>] [--yes]
 
 ## Options
 
-| Flag | Type | Description |
-| --- | --- | --- |
-| `--subject` | value | — |
-| `--message` | value | — |
+| `--subject` | value | Thread subject text. |
+| `--message` | value | Body of the post. |
 | `--yes` | flag | Skip the confirmation prompt. |
 
 ## Example
@@ -59,7 +57,7 @@ ActionResult & {url: string}
 
 ## Notes
 
-- To reply inside an existing discussion, use `reply` instead — `post` always creates a new thread.
+- To reply inside an existing discussion, use `reply` instead: `post` always creates a new thread.
 - The message is sent as-is; SCELE renders it with its own formatting rules.
 - There is no un-post. Check the subject and message before you pass `--yes`.
 

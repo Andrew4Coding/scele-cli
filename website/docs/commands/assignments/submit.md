@@ -63,7 +63,7 @@ ActionResult & {stage: string, warnings: object[]}
 
 ## Notes
 
-- `--text` and `--file` match the assignment's configured submission types — an assignment that only accepts files will reject text.
+- `--text` and `--file` match the assignment's configured submission types: an assignment that only accepts files will reject text.
 - `--draft` is the safe way to test the pipeline end-to-end without committing.
 - Verify afterwards with `assignment <cmid>`; do not assume success from exit code alone if the assignment has unusual settings.
 - Late submissions are accepted or refused by SCELE according to the cut-off date, not by the CLI.

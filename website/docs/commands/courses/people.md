@@ -6,8 +6,8 @@ icon: lucide/graduation-cap
 
 List the people enrolled in a course.
 
-`people` lists everyone enrolled in a course together with their roles — students,
-teachers, non-editing teachers, and so on.
+`people` lists everyone enrolled in a course together with their roles (students,
+teachers, non-editing teachers, and so on).
 
 It is the command to reach for when you need a person's user id (to read their forum posts)
 or simply want to know who is teaching a section.

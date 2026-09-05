@@ -6,7 +6,7 @@ icon: lucide/graduation-cap
 
 List the courses on your dashboard.
 
-`courses` lists every course you are currently enrolled in — the same set that fills your
+`courses` lists every course you are currently enrolled in, the same set that fills your
 SCELE dashboard. This is the entry point for almost everything else: the `id` in each row is
 the **course id** that `course`, `assignments`, `forums`, `grades`, `people`, and
 `resources` all take as their argument.
@@ -49,7 +49,7 @@ Course[]
 
 ## Notes
 
-- Enrolment is what determines this list — a course you can see in the catalog but are not enrolled in will not appear here. Use `categories` / `category` to browse those.
+- Enrolment is what determines this list: a course you can see in the catalog but are not enrolled in will not appear here. Use `categories` / `category` to browse those.
 - Pipe it through `jq` to build an id lookup: `scele -c courses | jq -r '.[] | "\(.id)\t\(.shortname)"'`.
 
 ## See also

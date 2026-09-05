@@ -88,9 +88,6 @@ make binary         # scripts/build-binary.sh -> dist/scele
 - Nested WS params are passed as plain dict/list; `session._flatten` renders `key[0][sub]` for you.
 - Write ops (`enrol`, `post`, `reply`, `subscribe`, `submit`) call state-changing WS functions.
   `post`/`reply`/`submit` require `--yes` or a TTY prompt.
-- `quiz-start` / `quiz-answer --finish` are irreversible (consume an attempt / submit for
-  grading) and require `--yes`. `quiz-answer` echoes the mechanical `:sequencecheck` hidden
-  fields automatically; the caller supplies the real answer fields (names from `quiz-attempt`).
 - When you add/rename a command, update `RETURNS` and `EXAMPLES` in `schema.py`
   (`tests/test_schema.py` enforces both), the command list in `skills/scele/SKILL.md`, and `README.md`.
 

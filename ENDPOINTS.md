@@ -33,12 +33,6 @@ The token is minted once: `POST /login/token.php` with `username`, `password`,
 | `assignment` | `core_course_get_course_module` + `mod_assign_get_submission_status` |
 | `submit --text` | `mod_assign_save_submission` (+ `mod_assign_submit_for_grading`) |
 | `submit --file` | `core_files_get_unused_draft_itemid` + `POST /webservice/upload.php` + `mod_assign_save_submission` (+ `mod_assign_submit_for_grading`) |
-| `quizzes` | `mod_quiz_get_quizzes_by_courses` + `mod_quiz_get_user_best_grade` |
-| `quiz` | `core_course_get_course_module` + `mod_quiz_get_quizzes_by_courses` + `mod_quiz_get_quiz_access_information` + `mod_quiz_get_user_attempts` |
-| `quiz-review` | `mod_quiz_get_attempt_review` |
-| `quiz-start` | `core_course_get_course_module` + `mod_quiz_start_attempt` |
-| `quiz-attempt` | `mod_quiz_get_attempt_data` |
-| `quiz-answer` | `mod_quiz_get_attempt_data` (for the `:sequencecheck` scaffold) + `mod_quiz_process_attempt` |
 | `resources` | `core_course_get_contents` (modules `resource` / `folder` / `url`) |
 | `announcements` | `mod_forum_get_forums_by_courses` (course 1, type `news`) + `mod_forum_get_forum_discussions` |
 | `enrol` | `enrol_self_enrol_user` |
@@ -56,17 +50,6 @@ The token is minted once: `POST /login/token.php` with `username`, `password`,
 - **discussion id (d)** — from `forum <id>` → `thread <d>`.
 - **post id** — from `thread <d>` → `reply <post>`.
 - **assignment ref** — instance id *or* cmid from `assignments <course>`; `assignment` takes the cmid.
-- **quiz cmid** — from `quizzes <course>` / `course <course>` → `quiz <cmid>` / `quiz-start <cmid>`.
-- **quiz attempt id** — from `quiz <cmid>` or `quiz-start` → `quiz-review` / `quiz-attempt` / `quiz-answer <attempt>`.
-- **quiz field name** — the raw Moodle form field from `quiz-attempt` (e.g.
-  `q<uniqueid>:<slot>_answer`), passed to `quiz-answer --set NAME=VALUE`.
-
-## Irreversible writes
-
-`quiz-start` consumes one of your allowed attempts; `quiz-answer --finish` submits the
-attempt for grading. Both require `--yes` or a TTY prompt. `mod_quiz_save_attempt` (the
-autosave endpoint) is not wired up — `quiz-answer` without `--finish` already saves via
-`mod_quiz_process_attempt`.
 
 ## Notes
 

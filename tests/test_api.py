@@ -9,7 +9,7 @@ import time
 from scele import api
 from scele.models import (
     AssignmentStatus, CalendarEvent, Deadline, Discussion, Grade, Notification, Person,
-    Post, Quiz, QuizAttemptPage, QuizDetail, QuizReview,
+    Post,
 )
 from scele.session import RequestFailedError
 
@@ -92,13 +92,13 @@ def test_assignment_status_summarizes_submission():
 def test_grades_maps_items():
     s = FakeSession({
         "gradereport_user_get_grade_items": {"usergrades": [{"gradeitems": [
-            {"itemname": "Quiz 1", "itemtype": "mod", "gradeformatted": "88.00",
+            {"itemname": "Midterm", "itemtype": "mod", "gradeformatted": "88.00",
              "grademin": 0, "grademax": 100, "percentageformatted": "88.00 %",
              "feedback": "<p>nice</p>", "gradedategraded": 0},
         ]}]},
     })
     out = api.grades(s, "4234")
-    assert out == [Grade(item="Quiz 1", type="mod", grade="88.00", range="0–100",
+    assert out == [Grade(item="Midterm", type="mod", grade="88.00", range="0–100",
                          percentage="88.00 %", feedback="nice",
                          graded=out[0].graded)]
 
@@ -198,112 +198,6 @@ def test_forum_uses_instance_id_directly_without_extra_calls():
     })
     assert api.forum(s, "17474")[0].id == "62561"
     assert [c[0] for c in s.calls] == ["mod_forum_get_forum_discussions"]
-
-
-_QUIZ = {"id": 8228, "coursemodule": 188689, "name": "Mini-quiz W5",
-         "timeopen": 0, "timeclose": 4102444800, "timelimit": 600, "attempts": 1,
-         "grade": 10, "grademethod": 1, "intro": "<p>hi</p>"}
-
-
-def test_quizzes_lists_with_best_grade():
-    s = FakeSession({
-        "mod_quiz_get_quizzes_by_courses": {"quizzes": [_QUIZ]},
-        "mod_quiz_get_user_best_grade": {"hasgrade": True, "grade": 9},
-    })
-    out = api.quizzes(s, "3937")
-    assert len(out) == 1 and isinstance(out[0], Quiz)
-    assert out[0].cmid == "188689" and out[0].best_grade == "9"
-    assert out[0].time_limit == "10 mins" and out[0].is_open is True
-
-
-def test_quiz_detail_resolves_cmid_and_merges_access():
-    s = FakeSession({
-        "core_course_get_course_module": {"cm": {"id": 188689, "instance": 8228,
-                                                 "course": 3937, "name": "Mini-quiz W5"}},
-        "mod_quiz_get_quizzes_by_courses": {"quizzes": [_QUIZ]},
-        "mod_quiz_get_user_best_grade": {"hasgrade": True, "grade": 10},
-        "mod_quiz_get_quiz_access_information": {
-            "canattempt": False,
-            "preventaccessreasons": ["This quiz is not currently available"],
-            "accessrules": ["Attempts allowed: 1", "Time limit: 10 mins"]},
-        "mod_quiz_get_user_attempts": {"attempts": [
-            {"id": 459484, "attempt": 1, "state": "finished",
-             "timestart": 0, "timefinish": 0, "sumgrades": 10}]},
-    })
-    d = api.quiz(s, "188689")
-    assert isinstance(d, QuizDetail)
-    assert d.id == "8228" and d.grade_method == "highest grade"
-    assert d.can_attempt is False and d.prevented_reasons
-    assert d.attempts[0].id == "459484"
-
-
-def test_quiz_review_extracts_marks_and_submitted_answer():
-    html = ('<div class="que numerical correct"><div class="qtext"><p>Compute F1</p></div>'
-            '<input name="q1_answer" value="0.862" readonly>'
-            '<div class="rightanswer">The correct answer is: 0.909</div></div>')
-    s = FakeSession({"mod_quiz_get_attempt_review": {
-        "grade": 10,
-        "attempt": {"quiz": 8228, "state": "finished", "sumgrades": 10,
-                    "timestart": 0, "timefinish": 0},
-        "questions": [{"slot": 1, "number": 1, "type": "numerical", "status": "Correct",
-                       "mark": "10.00", "maxmark": 10, "flagged": False, "html": html}],
-    }})
-    r = api.quiz_review(s, "459484")
-    assert isinstance(r, QuizReview) and r.grade == "10"
-    q = r.questions[0]
-    assert q.status == "Correct" and q.mark == "10.00" and q.max_mark == "10"
-    assert "Your answer: 0.862" in q.text
-    assert "correct answer is: 0.909" in q.text
-
-
-_Q_HTML = (
-    '<div class="que numerical"><div class="qtext"><p>Compute F1</p></div>'
-    '<input type="hidden" name="q42:1_:sequencecheck" value="1">'
-    '<input type="text" name="q42:1_answer" value="">'
-    '<input type="hidden" name="q42:1_:flagged" value="0"></div>'
-)
-
-
-def test_quiz_start_returns_new_attempt():
-    s = FakeSession({
-        "core_course_get_course_module": {"cm": {"instance": 8228}},
-        "mod_quiz_start_attempt": {"attempt": {"id": 999, "attempt": 2, "state": "inprogress"},
-                                   "warnings": []},
-    })
-    out = api.quiz_start(s, "188689", password="secret")
-    assert out["attempt_id"] == "999" and out["state"] == "inprogress" and out["ok"]
-    call = dict(s.calls[-1][1])
-    assert call["forcenew"] is False
-    assert call["preflightdata"] == [{"name": "quizpassword", "value": "secret"}]
-
-
-def test_quiz_attempt_page_exposes_form_fields():
-    s = FakeSession({
-        "mod_quiz_get_attempt_data": {
-            "attempt": {"quiz": 8228, "state": "inprogress"},
-            "nextpage": -1,
-            "questions": [{"slot": 1, "number": 1, "type": "numerical",
-                           "status": "Not yet answered", "maxmark": 10, "html": _Q_HTML}],
-        },
-    })
-    page = api.quiz_attempt_page(s, "999")
-    assert isinstance(page, QuizAttemptPage) and page.next_page is None
-    names = [f["name"] for f in page.questions[0].fields]
-    assert "q42:1_answer" in names and "q42:1_:sequencecheck" in names
-
-
-def test_quiz_answer_merges_scaffold_and_can_finish():
-    s = FakeSession({
-        "mod_quiz_get_attempt_data": {"questions": [{"html": _Q_HTML}]},
-        "mod_quiz_process_attempt": {"state": "finished", "warnings": []},
-    })
-    out = api.quiz_answer(s, "999", {"q42:1_answer": "0.909"}, finish=True)
-    assert out["state"] == "finished" and out["finished"] is True
-    sent = {f["name"]: f["value"]
-            for f in dict(s.calls[-1][1])["data"]}
-    assert sent["q42:1_answer"] == "0.909"
-    assert sent["q42:1_:sequencecheck"] == "1"  # echoed automatically
-    assert dict(s.calls[-1][1])["finishattempt"] == 1
 
 
 def test_forum_reply_passes_subject_when_given():

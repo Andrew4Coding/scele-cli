@@ -108,11 +108,9 @@ document at all.
 
 ### Write commands
 
-Anything that changes state on SCELE — `enrol`, `subscribe`, `post`, `reply`, `submit`,
-`quiz-start`, `quiz-answer --finish` — must require `--yes` or an interactive confirmation.
-The irreversible ones (`quiz-start` consumes an attempt, `quiz-answer --finish` submits for
-grading, `submit` hands work to a teacher) require `--yes` with no way around it. Do not
-relax this.
+Anything that changes state on SCELE — `enrol`, `subscribe`, `post`, `reply`, `submit`
+— must require `--yes` or an interactive confirmation. The irreversible ones (`submit`
+hands work to a teacher) require `--yes` with no way around it. Do not relax this.
 
 ### Credentials
 

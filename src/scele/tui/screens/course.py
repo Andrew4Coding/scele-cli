@@ -17,7 +17,6 @@ TYPE_ICONS = {
     "folder": "▸",
     "url": "↗",
     "page": "≡",
-    "quiz": "?",
     "label": "•",
 }
 
@@ -115,10 +114,6 @@ class CourseScreen(SearchableScreen, Screen):
             from .assignment import AssignmentScreen
 
             self.app.push_screen(AssignmentScreen(activity.cmid))
-        elif activity.type == "quiz":
-            from .quiz import QuizScreen
-
-            self.app.push_screen(QuizScreen(activity.cmid))
         elif activity.type in ("resource", "folder"):
             from .download import DownloadModal
 

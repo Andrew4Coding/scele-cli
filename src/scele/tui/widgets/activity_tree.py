@@ -9,7 +9,6 @@ TYPE_ICONS = {
     "folder": "▸",
     "url": "↗",
     "page": "≡",
-    "quiz": "?",
     "label": "•",
 }
 

@@ -1,0 +1,422 @@
+/* =========================================================================
+   Palette — SCELE gold.
+   The header carries the yellow in light mode with dark text on it; in dark
+   mode the header goes near-black and the gold moves to type and accents,
+   which is the only way yellow stays readable in both schemes.
+   ========================================================================= */
+
+:root {
+  --scele-gold: #f2b705;
+  --scele-gold-light: #ffd44d;
+  --scele-gold-dark: #b37f00;
+  --scele-ink: #2a2003;
+}
+
+[data-md-color-scheme="default"][data-md-color-primary] {
+  --md-primary-fg-color: var(--scele-gold);
+  --md-primary-fg-color--light: var(--scele-gold-light);
+  --md-primary-fg-color--dark: var(--scele-gold-dark);
+  --md-primary-bg-color: var(--scele-ink);
+  --md-primary-bg-color--light: rgba(42, 32, 3, 0.72);
+
+  --md-accent-fg-color: var(--scele-gold-dark);
+  --md-accent-fg-color--transparent: rgba(179, 127, 0, 0.1);
+
+  --md-typeset-a-color: #8a6100;
+  --md-footer-bg-color: #241d0a;
+  --md-footer-bg-color--dark: #17120a;
+
+  --scele-accent: var(--scele-gold-dark);
+  --scele-surface: #fffdf5;
+  --scele-border: #e8dcb4;
+}
+
+[data-md-color-scheme="slate"][data-md-color-primary] {
+  --md-hue: 45;
+
+  --md-primary-fg-color: #1c1810;
+  --md-primary-fg-color--light: #2b2517;
+  --md-primary-fg-color--dark: #100d08;
+  --md-primary-bg-color: var(--scele-gold-light);
+  --md-primary-bg-color--light: rgba(255, 212, 77, 0.72);
+
+  --md-accent-fg-color: var(--scele-gold-light);
+  --md-accent-fg-color--transparent: rgba(255, 212, 77, 0.1);
+
+  --md-typeset-a-color: var(--scele-gold-light);
+  --md-footer-bg-color: #14110a;
+  --md-footer-bg-color--dark: #0d0b06;
+
+  --scele-accent: var(--scele-gold-light);
+  --scele-surface: rgba(255, 212, 77, 0.03);
+  --scele-border: rgba(255, 212, 77, 0.18);
+}
+
+/* The header title and icons ride on the gold in light mode. */
+.md-header,
+.md-tabs {
+  color: var(--md-primary-bg-color);
+}
+
+.md-tabs {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+[data-md-color-scheme="slate"] .md-tabs {
+  border-bottom-color: rgba(255, 212, 77, 0.14);
+}
+
+[data-md-color-scheme="default"][data-md-color-primary] .md-search__form {
+  background-color: rgba(42, 32, 3, 0.12);
+}
+
+[data-md-color-scheme="default"][data-md-color-primary] .md-search__input::placeholder,
+[data-md-color-scheme="default"][data-md-color-primary] .md-search__icon {
+  color: rgba(42, 32, 3, 0.6);
+}
+
+/* No brand mark in the header — the wordmark carries it. */
+.md-header__button.md-logo {
+  display: none;
+}
+
+.md-header__title {
+  margin-left: 0.6rem;
+}
+
+/* Selected item in the integrated left-hand table of contents. */
+.md-nav__link--active,
+.md-nav__link:hover {
+  color: var(--scele-accent);
+}
+
+/* =========================================================================
+   Hero
+   ========================================================================= */
+
+.hero {
+  text-align: center;
+  padding: 3.5rem 0 2.5rem;
+  border-bottom: 1px solid var(--scele-border);
+  margin-bottom: 2.5rem;
+}
+
+.hero__title {
+  font-size: 3.2rem;
+  line-height: 1.1;
+  margin: 0 0 0.6rem;
+  letter-spacing: -0.03em;
+  background: linear-gradient(96deg, var(--scele-gold-dark), var(--scele-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[data-md-color-scheme="slate"] .hero__title {
+  background: linear-gradient(96deg, var(--scele-gold), var(--scele-gold-light));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.hero__tagline {
+  max-width: 42rem;
+  margin: 0 auto 2rem;
+  font-size: 0.9rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.hero__install {
+  max-width: 44rem;
+  margin: 0 auto 1.6rem;
+  text-align: left;
+}
+
+.hero__install-os {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--md-default-fg-color--light);
+  margin-bottom: 0.4rem;
+}
+
+.hero__install-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--scele-border);
+  border-radius: 0.4rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+}
+
+.hero__install-row code {
+  flex: 1;
+  align-self: center;
+  background: none;
+  padding: 0;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.hero__copy {
+  flex: none;
+  cursor: pointer;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0 0.9rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--scele-ink);
+  background: var(--scele-gold);
+}
+
+.hero__copy:hover {
+  filter: brightness(1.08);
+}
+
+.hero__cta {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* =========================================================================
+   Feature grid
+   ========================================================================= */
+
+.feature-heading {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.2rem;
+  margin: 2rem 0 3rem;
+}
+
+.feature-card {
+  border: 1px solid var(--scele-border);
+  border-radius: 0.5rem;
+  padding: 1.3rem;
+  background: var(--scele-surface);
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.feature-card:hover {
+  border-color: var(--scele-accent);
+  transform: translateY(-2px);
+}
+
+.feature-card h3 {
+  margin: 0.7rem 0 0.4rem;
+  font-size: 1rem;
+}
+
+.feature-card p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.feature-card__img {
+  display: block;
+  width: 100%;
+  height: 9rem;
+  object-fit: cover;
+  border-radius: 0.35rem;
+  background: var(--md-code-bg-color);
+}
+
+.feature-card__img.is-placeholder {
+  font-size: 0;
+  border: 1px dashed var(--scele-border);
+}
+
+/* =========================================================================
+   Command pages
+   ========================================================================= */
+
+/* Screenshot of a command's real output. */
+.cmd-shot {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--scele-border);
+  border-radius: 0.4rem;
+  background: var(--md-code-bg-color);
+}
+
+.cmd-shot.is-placeholder {
+  font-size: 0;
+  min-height: 8rem;
+  border-style: dashed;
+}
+
+/* "write" badge in the command overview table. */
+.cmd-write {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.6rem;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--scele-ink);
+  background: var(--scele-gold);
+}
+
+/* =========================================================================
+   Report-an-issue form
+   ========================================================================= */
+
+.issue-form {
+  max-width: 40rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.issue-field {
+  margin-bottom: 1rem;
+}
+
+.issue-field label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.issue-field label span {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--md-default-fg-color--light);
+}
+
+.issue-field input,
+.issue-field select,
+.issue-field textarea {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.76rem;
+  color: var(--md-default-fg-color);
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--scele-border);
+  border-radius: 0.3rem;
+}
+
+.issue-field textarea {
+  resize: vertical;
+  font-family: var(--md-code-font-family, monospace);
+}
+
+.issue-field input:focus,
+.issue-field select:focus,
+.issue-field textarea:focus {
+  outline: 2px solid var(--scele-accent);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+.issue-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.issue-actions .md-button {
+  margin: 0;
+}
+
+.issue-hint {
+  flex: 1;
+  min-width: 12rem;
+  font-size: 0.66rem;
+  color: var(--md-default-fg-color--light);
+}
+
+/* =========================================================================
+   Contributors
+   ========================================================================= */
+
+.contributors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.8rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.contributors__status {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.contributor {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  border: 1px solid var(--scele-border);
+  border-radius: 0.4rem;
+  background: var(--scele-surface);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 120ms ease;
+}
+
+.contributor:hover {
+  border-color: var(--scele-accent);
+}
+
+.contributor img {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--md-code-bg-color);
+}
+
+.contributor__name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.contributor__count {
+  font-size: 0.62rem;
+  color: var(--md-default-fg-color--light);
+}
+
+/* =========================================================================
+   Footer
+   ========================================================================= */
+
+.site-foot {
+  text-align: center;
+  padding: 2.5rem 0 1rem;
+  border-top: 1px solid var(--scele-border);
+  font-size: 0.75rem;
+  color: var(--md-default-fg-color--light);
+}
+
+.site-foot span {
+  display: block;
+  margin-top: 0.6rem;
+  opacity: 0.75;
+}
+
+@media screen and (max-width: 44rem) {
+  .hero__title { font-size: 2.4rem; }
+  .hero__install-row code { white-space: normal; word-break: break-all; }
+}

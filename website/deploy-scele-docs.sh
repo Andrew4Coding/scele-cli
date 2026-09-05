@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Rebuild the scele-cli docs site from git and publish it.
 # nginx serves $REPO/website/site directly, so no reload is needed.
-#   usage: ~/deploy-scele-docs.sh [branch]     (default: docs)
+#   usage: ~/deploy-scele-docs.sh [branch]     (default: main)
 set -euo pipefail
 
 REPO=/home/andrew/scele-cli
-BRANCH="${1:-docs}"
+BRANCH="${1:-main}"
 SITE_URL="https://scele.andrewaryo.com/"
 
 cd "$REPO"
